@@ -1,6 +1,6 @@
 ---
 title: "Prueba importar tickets"
-author: "Iván"
+author: "Grupos E"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -9,13 +9,22 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Introducción
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Mercadona y otros supermecados como Lidl, Dia y Comsum han implantado el ticket electrónico y los usuarios que lo deseen pueden recibirlo como documento pdf en su correo electrónico, en lugar de hacerlo en papel.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Como alumnos del GCD nos plantemos el siguiente objetivo:
 
-```{r cars}
+Queremos desarrollar un programa que permita analizar los tickets para realizar un seguimiento de (evolución de precios, compras más habituales, productos más consumidos, supermercado habitual, hora de compra, etc).
+
+Dado que el formato no es el mismo nos vamos a centrar en tickets de Mercadona.
+
+Con este proyecto se espera desarrollar una herramienta capaz de leer y analizar automáticamente tickets de compra de Mercadona, extraídos en formato PDF, para obtener información útil sobre los hábitos de consumo.
+
+A continuacón realizaremos la importación de datos para cargar los tickets en pdf de mercadona:
+
+Primero cargamos todos los datos.
+```{r}
 library(pdftools)
 library(tidyverse)
 
@@ -36,5 +45,10 @@ df_lineas <- do.call(rbind, lapply(archivos_pdf, function(archivo) {
     stringsAsFactors = FALSE
   )
 }))
+```
+A continuación con el df_lineas, creamos otro df quitando las lineas de texto que no nos sirven como texto en blanco o texto que se repite en todos los tickets.
+
+```{r}
+df <- df_lineas%>%filter(linea != "1" & linea != "4" & linea != "11" & texto != "" & texto != "     SE ADMITEN DEVOLUCIONES CON TICKET" & texto != "              DISPONE DE 20 MINUTOS" & texto != "            PARA RETIRAR SU VEHÍCULO")
 ```
 
