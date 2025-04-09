@@ -46,9 +46,3 @@ df_lineas <- do.call(rbind, lapply(archivos_pdf, function(archivo) {
   )
 }))
 ```
-A continuación con el df_lineas, creamos otro df quitando las lineas de texto que no nos sirven como texto en blanco o texto que se repite en todos los tickets.
-
-```{r}
-df <- df_lineas%>%filter(linea != "1" & linea != "4" & linea != "11" & texto != "" & texto != "     SE ADMITEN DEVOLUCIONES CON TICKET" & texto != "              DISPONE DE 20 MINUTOS" & texto != "            PARA RETIRAR SU VEHÍCULO")
-```
-
