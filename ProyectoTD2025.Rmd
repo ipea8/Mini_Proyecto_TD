@@ -1,5 +1,5 @@
 ---
-title: "Prueba importar tickets"
+title: "ProyectoTD2025"
 author: "Grupos E"
 date: "`r Sys.Date()`"
 output: html_document
@@ -28,7 +28,7 @@ Primero cargamos todos los datos.
 library(pdftools)
 library(tidyverse)
 
-archivos_pdf <- list.files(path = ".", pattern = "Mercadona|Carrefour", 
+archivos_pdf <- list.files(path = ".", pattern = "Mercadona", 
                            full.names = TRUE, recursive = TRUE)
 
 # Leer todos los archivos y construir un data frame
