@@ -15,11 +15,32 @@ Mercadona y otros supermecados como Lidl, Dia y Comsum han implantado el ticket 
 
 Como alumnos del GCD nos plantemos el siguiente objetivo:
 
-Queremos desarrollar un programa que permita analizar los tickets para realizar un seguimiento de (evolución de precios, compras más habituales, productos más consumidos, supermercado habitual, hora de compra, etc).
+Queremos desarrollar un programa que permita analizar los tickets para realizar un seguimiento de evolución de precios, compras más habituales, productos más consumidos, supermercado habitual, hora de compra, etc.
 
 Dado que el formato no es el mismo nos vamos a centrar en tickets de Mercadona.
 
 Con este proyecto se espera desarrollar una herramienta capaz de leer y analizar automáticamente tickets de compra de Mercadona, extraídos en formato PDF, para obtener información útil sobre los hábitos de consumo.
+
+
+## Material y métodos
+
+Para este proyecto se ha utilizado un conjunto de tickets de compra proporcionados en formato PDF. Todos los tickets pertenecen, como hemos comentado antes, a supermercados Mercadona.
+
+El análisis de datos se realiza utilizando el lenguaje de programación R. 
+
+Como sabemos, la librería `pdftools` y la función `pdf_text` sirven para cargar el contenido del ticket en un vector de texto. Por lo tanto, los tickets serán leídos uno a uno utilizando la función `pdf_text()` de la librería `pdftools`, que permite convertir el contenido del PDF en texto plano. A partir de ese texto, se ha extraído:
+
+- Encabezado (previo a productos) FIJO
+- Parte final (después del Total).
+- Si hay aparcamiento o no (línea extra)
+- Productos:
+  · Venta por unidades
+  · Venta al peso, FRUTA y VERDURA
+  · Venta al peso, PESCADO
+  · Venta LISTO COMER (No hay en los tickets proporcionados)
+
+
+## Importación de datos
 
 A continuacón realizaremos la importación de datos para cargar los tickets en pdf de mercadona:
 
