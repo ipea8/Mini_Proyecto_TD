@@ -104,4 +104,6 @@ En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantid
 
 ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
 
+¿A qué horas se suele ir más a comprar en los supermercados? ¿Cuáles son las que menos?
+
 
