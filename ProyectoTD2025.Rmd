@@ -106,4 +106,5 @@ En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantid
 
 ¿A qué horas se suele ir más a comprar en los supermercados? ¿Cuáles son las que menos?
 
+¿Qué método de pago es más frecuente en los tickets: tarjeta o efectivo? Muéstralo mediante un box plot ¿Cuánto se ha gastado en total con cada método de pago?
 
