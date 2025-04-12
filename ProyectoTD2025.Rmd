@@ -66,4 +66,6 @@ df_lineas <- do.call(rbind, lapply(archivos_pdf, function(archivo) {
     stringsAsFactors = FALSE
   )
 }))
+
+head(df_lineas) #Se muestra el df de los tickets del mercadona
 ```
