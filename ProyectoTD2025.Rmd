@@ -69,3 +69,35 @@ df_lineas <- do.call(rbind, lapply(archivos_pdf, function(archivo) {
 
 head(df_lineas) #Se muestra el df de los tickets del mercadona
 ```
+
+## Preguntas planteadas por el profesor
+
+¿Cuáles son los 5 productos, de los vendidos por unidades, con más ventas? ¿Cuántas unidades de cada uno se han vendido?
+
+Si consideramos la categoría de FRUTAS Y VERDURAS. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
+
+Si consideramos la categoría de PESCADO. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
+
+Muestra mediante un gráco de líneas como ha variado el precio por kilo de las bananas y los plátanos en los tickets disponibles, a lo largo del tiempo.
+
+¿Cuál es la procedencia de los tickets? ¿Qué ciudad/ pueblo tiene un mayor número de tickets?
+
+Muestra mediante un diagrama el número de tickets recogidos cada día de las semana. ¿Si tuvieses que cerrar un día entre semana qué día lo harías?
+
+## Preguntas planteadas por nosotros
+
+¿Cuál es la media de ventas para cada día de la semana?
+
+¿Cómo ha evolucionado el precio por unidad o por kilo de un producto específico a lo largo del tiempo? Hacer el gráfico de cómo varía el precio de un producto a lo largo del tiempo.
+
+¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
+
+En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)
+
+¿Cuáles son las combinaciones de productos más frecuentes (dos productos que se compren juntos)?
+
+¿Hay estacionalidad en ciertos productos (produtos que se compran más en cierta fecha del año)?
+
+¿Cuántos productos se compran por ticket, en promedio?
+
+¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
