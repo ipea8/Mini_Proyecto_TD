@@ -101,3 +101,7 @@ En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantid
 ¿Cuántos productos se compran por ticket, en promedio?
 
 ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
+
+¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
+
+
