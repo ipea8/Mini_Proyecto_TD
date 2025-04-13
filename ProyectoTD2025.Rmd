@@ -49,7 +49,8 @@ Primero cargamos todos los datos.
 library(pdftools)
 library(tidyverse)
 
-archivos_pdf <- list.files(path = ".", pattern = "Mercadona", 
+ruta_tickets<- 'data/'
+archivos_pdf <- list.files(path = ruta_tickets, pattern = "Mercadona", 
                            full.names = TRUE, recursive = TRUE)
 
 # Leer todos los archivos y construir un data frame
