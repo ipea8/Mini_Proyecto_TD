@@ -111,7 +111,7 @@ top_5_productos <- df_productos %>%
 #Mostrar el resultado
 print(top_5_productos)
 
-# Como podemos observar, los cinco productos más vendidos por unidades son: leche desnatada con calcio (22 unidades), barra campesina(12 unidades), chapata cristal(12 unidades), garbanzo cocido (12 unidades) y leche desnatada sin lactosa (12 unidades)
+# Como podemos observar, los cinco productos más vendidos por unidades son: leche desnatada con calcio (22 unidades), barra campesina(12 unidades), chapata cristal(12 unidades), garbanzo m.cocido (12 unidades) y leche desnatada sin lactosa (12 unidades)
 
 ```
 
