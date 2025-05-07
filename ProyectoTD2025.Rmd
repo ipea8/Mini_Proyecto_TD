@@ -48,6 +48,10 @@ Primero cargamos todos los datos.
 ```{r}
 library(pdftools)
 library(tidyverse)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(knitr)
 
 ruta_tickets<- 'data/'
 archivos_pdf <- list.files(path = ruta_tickets, pattern = "Mercadona", 
@@ -68,7 +72,7 @@ df_lineas <- do.call(rbind, lapply(archivos_pdf, function(archivo) {
   )
 }))
 
-head(df_lineas) #Se muestra el df de los tickets del mercadona
+kable(head(df_lineas,52),caption= "Tabla de tickets de mercadona") #Se muestra el df de los tickets del mercadona
 ```
 
 ## Preguntas planteadas por el profesor
