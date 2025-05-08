@@ -291,7 +291,7 @@ frutas <- frutas %>%
 frutas <- frutas %>% select(-archivo) %>% select(-linea) #Eliminar columnas sobrantes
 frutas <- frutas %>%  mutate(tipo = str_extract(texto, "BANANA|PLATANO"))%>% select(-texto)
 
-# Gráfico de líneas básico
+# Gráfico de líneas
 ggplot(frutas, aes(x = fecha, y = precio_kg, color = tipo)) +
   geom_line() +
   geom_point() +
@@ -320,6 +320,30 @@ knitr::kable(procedencia,
 Como se observa en la Tabla \@ref(tab:tabla-procedencia), las diferentes ciudades o pueblos de procedencia de los tickets, siendo Valencia la que presenta el mayor número.
 
 6. Muestra mediante un diagrama el número de tickets recogidos cada día de las semana. ¿Si tuvieses que cerrar un día entre semana qué día lo harías?
+
+```{r figura-semanas, fig.cap="Tickets recogidos cada día de las semana"}
+df_fechas <- df_lineas %>% filter(linea == "5") #filtrar fechas
+df_fechas <- df_fechas %>%  mutate(fecha = str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b")) %>% select(-texto) #Guardamos solo la fecha
+df_fechas$fecha <- as.Date(df_fechas$fecha, format = "%d/%m/%Y") #Convertir str a fecha
+
+df_fechas$dia_semana <- weekdays(df_fechas$fecha) #Crear una nueva columna con los dias de la semana de cada fecha
+dia_semana <- as.vector(df_fechas$dia_semana) #Convertir a vector solo de los dias de la semana
+
+dia_semana <- as.data.frame(table(dia_semana)) #Convertir a df a partir de la frecuencia de cada dia de la semana
+names(dia_semana)[names(dia_semana) == "dia_semana"] <- "semana"
+
+orden_dias <- c("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")
+dia_semana$semana <- factor(dia_semana$semana, levels = orden_dias)
+
+#Diagrama
+ggplot(dia_semana, aes(x = semana, y = Freq, fill = semana)) +
+  geom_bar(stat = "identity") +  # "identity" usa los valores de 'Freq'
+  labs(title = "Tickets recogidos cada día de las semana",
+    x = "Día de la semana",
+    y = "Número de tickets")
+```
+
+Como se observa en la Tabla \@ref(fig:figura-semanas), Si tuvieses que cerrar un día entre semana seria el jueves
 
 ## Preguntas planteadas por nosotros
 
