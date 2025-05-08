@@ -378,3 +378,4 @@ Hemos presentado:
 
 2. Figuras:
    - Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
+   - Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana
