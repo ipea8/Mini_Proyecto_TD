@@ -1,17 +1,25 @@
 ---
 title: "ProyectoTD2025"
-autores/as: "Andrea Fu Castelló Sala, Sergio Del Carme Moreno, María Martínez Marí, Jorge Navarro Rodríguez, Iván Pérez Alonso y Edurne Serigó Troyano"
+author:
+- Andrea Fu Castelló Sala
+- Sergio Del Carme Moreno
+- María Martínez Marí
+- Jorge Navarro Rodríguez
+- Iván Pérez Alonso
+- Edurne Serigó Troyano
 date: "`r Sys.Date()`"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Configurar nombres en español para gráficos
+options(OutDec = ",", digits = 2)
 ```
 
-## Cargamos las librerias que vamos a usar
-
 ```{r}
+## Cargamos las librerias que vamos a usar
 library(pdftools)
 library(tidyverse)
 library(dplyr)
@@ -254,7 +262,62 @@ head(resumen_pescado, 5)
 
 4. Muestra mediante un gráco de líneas como ha variado el precio por kilo de las bananas y los plátanos en los tickets disponibles, a lo largo del tiempo.
 
+```{r figura-bananas_platanos,  fig.cap="Evolución de precio por kilo de las bananas y los plátanos"}
+
+#Filtrar las lineas que contengan platano y banana
+frutas <- df_lineas %>% filter(str_detect(tolower(texto), "platano|banana"))
+
+#Creamos un vector con los nombres de los tickets que han combrado banana o platano
+archivo_frutas <- frutas %>% select(archivo) #filtramos los nombres
+archivo_frutas <- as.vector(archivo_frutas$archivo) #Convertir a vector
+
+#Creamos un df que contiene las fechas de los tickets que han comprado platano o banana
+df_fechas <- df_lineas %>% filter(linea == "5") %>% right_join(data.frame(archivo = archivo_frutas), by = "archivo") #filtramos las fechas
+df_fechas <- df_fechas %>%  mutate(fecha = str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b")) %>% select(-texto) #Guardamos solo la fecha
+frutas$fecha <- df_fechas$fecha #Guardamos en el vector de frutas
+frutas$fecha <- as.Date(frutas$fecha, format = "%d/%m/%Y") #Convertimos en fecha
+
+#Obtener el precio por kilo de platano y banana
+filas_frutas <- which(str_detect(tolower(df_lineas$texto), "platano|banana")) #Buscamos la linea de platano o banana
+filas_precio_kilo <- filas_frutas + 1 #Obtenemos la linea del precio por kilo
+frutas$precio <- df_lineas %>% slice(filas_precio_kilo)%>%pull(texto) #Se agrega al df de frutas
+frutas <- frutas %>%  mutate(precio_kg = str_extract(precio, "\\b\\d+,\\d{2}\\s€/kg\\b")) %>% select(-precio) #Se guarda solo el precio por kilo
+frutas <- frutas %>%
+  mutate(precio_kg = str_replace(precio_kg, " €/kg", "") %>%  # Elimina " €/kg"
+         str_replace(",", ".") %>%     # Cambia coma por punto decimal
+         as.numeric())
+
+#Arreglar el df
+frutas <- frutas %>% select(-archivo) %>% select(-linea) #Eliminar columnas sobrantes
+frutas <- frutas %>%  mutate(tipo = str_extract(texto, "BANANA|PLATANO"))%>% select(-texto)
+
+# Gráfico de líneas básico
+ggplot(frutas, aes(x = fecha, y = precio_kg, color = tipo)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Evolución de Precios por Kg",
+       x = "Fecha",
+       y = "Precio por Kg",
+       color = "Tipo de Fruta")
+```
+
 5. ¿Cuál es la procedencia de los tickets? ¿Qué ciudad/ pueblo tiene un mayor número de tickets?
+
+```{r tabla-procedencia}
+#Creamos un nuevo vector con los lugares de procedencia de los tickets
+procedencia <- df_lineas %>% filter(linea == "3") %>% pull(texto) #Filtrar por el lugar
+procedencia <- gsub("^\\s+|\\s+$|[0-9]", "", procedencia) #Guardar solo la ciudad/pueblo
+
+procedencia <- as.data.frame(table(procedencia)) #Crear un df a partir de la frecuencia de cada ciudad/pueblo
+procedencia <- procedencia[order(-procedencia$Freq), ] #Ordenamos de mayor a menor la frecuencia
+
+knitr::kable(procedencia, 
+             caption = "Procedencia de los tickets", 
+             booktabs = TRUE)
+
+```
+
+Como se observa en la Tabla \@ref(tab:tabla-procedencia), las diferentes ciudades o pueblos de procedencia de los tickets, siendo Valencia la que presenta el mayor número.
 
 6. Muestra mediante un diagrama el número de tickets recogidos cada día de las semana. ¿Si tuvieses que cerrar un día entre semana qué día lo harías?
 
@@ -282,3 +345,12 @@ head(resumen_pescado, 5)
 
 17. ¿Qué método de pago es más frecuente en los tickets: tarjeta o efectivo? Muéstralo mediante un box plot ¿Cuánto se ha gastado en total con cada método de pago?
 
+# Conclusión
+
+Hemos presentado:
+
+1. Tablas:
+   - Tabla \@ref(tab:tabla-procedencia): Datos de procedencia de los tickets
+
+2. Figuras:
+   - Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
