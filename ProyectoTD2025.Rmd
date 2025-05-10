@@ -411,9 +411,46 @@ Como se observa en la Tabla \@ref(fig:figura-semanas), Si tuvieses que cerrar un
 
 15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
 ```{r}
-#Filtramos las líneas que contienen el % de IVA
-extraer_IVA<-function(df){
+library(knitr)
 
+#Extraemos las líneas de IVA del ticket
+lineas_IVA<-df_lineas %>% 
+  
+  #Filtramos las líneas que coincidan con el patrón de IVA (porcentaje, base y la cuota)
+  filter(str_detect(texto, "^\\s*\\d{1,2}%?\\s+\\d+[,.]\\d{2}\\s+\\d+[,.]\\d{2}")) %>% 
+  mutate(
+  texto=str_squish(texto),
+  
+  #Extraemos tipo de IVA, base imponible y cuota
+  porcentaje = str_extract(texto, "^\\d{1,2}"),
+  base = str_extract(texto, "(?<=\\s)\\d+[,.]\\d{2}(?=\\s+\\d+[,.]\\d{2}$)"),
+  cuota = str_extract(texto, "\\d+[,.]\\d{2}$")
+  ) %>% 
+  
+  #Convertimos los strings en valores numéricos
+  mutate(
+    porcentaje = as.numeric(str_replace(porcentaje, "%", "")),
+    base = as.numeric(str_replace(base, ",", ".")),
+    cuota = as.numeric(str_replace(cuota, ",", "."))
+  ) %>%
+  #Seleccionamos las columnas que nos interesan
+  select(archivo, linea, porcentaje, base, cuota)
+
+#Sumamos la cuota por tipo de IVA
+total_TipoIVA <- lineas_IVA %>%
+  group_by(porcentaje) %>%
+  summarise(
+    Cuota= sum(cuota, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(porcentaje))
+
+#Mostrar solo los tipos que nos interesan, en este caso solo el 21%, 10% y 5%
+IVA_filtrado <- total_TipoIVA %>%
+  filter(porcentaje %in% c(21, 10, 5))
+
+#Mostramos el resultado mediante una tabla.
+kable(IVA_filtrado, caption = "Total de IVA por tipo de porcentaje")
 
 ```
 
