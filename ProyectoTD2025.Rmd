@@ -27,6 +27,7 @@ library(stringr)
 library(ggplot2)
 library(knitr)
 ```
+
 ## Introducción
 
 Mercadona y otros supermecados como Lidl, Dia y Comsum han implantado el ticket electrónico y los usuarios que lo deseen pueden recibirlo como documento pdf en su correo electrónico, en lugar de hacerlo en papel.
@@ -39,30 +40,25 @@ Dado que el formato no es el mismo nos vamos a centrar en tickets de Mercadona.
 
 Con este proyecto se espera desarrollar una herramienta capaz de leer y analizar automáticamente tickets de compra de Mercadona, extraídos en formato PDF, para obtener información útil sobre los hábitos de consumo.
 
-
 ## Material y métodos
 
 Para este proyecto se ha utilizado un conjunto de tickets de compra proporcionados en formato PDF. Todos los tickets pertenecen, como hemos comentado antes, a supermercados Mercadona.
 
-El análisis de datos se realiza utilizando el lenguaje de programación R. 
+El análisis de datos se realiza utilizando el lenguaje de programación R.
 
 Como sabemos, la librería `pdftools` y la función `pdf_text` sirven para cargar el contenido del ticket en un vector de texto. Por lo tanto, los tickets serán leídos uno a uno utilizando la función `pdf_text()` de la librería `pdftools`, que permite convertir el contenido del PDF en texto plano. A partir de ese texto, se ha extraído:
 
-- Encabezado (previo a productos) FIJO
-- Parte final (después del Total).
-- Si hay aparcamiento o no (línea extra)
-- Productos:
-  · Venta por unidades
-  · Venta al peso, FRUTA y VERDURA
-  · Venta al peso, PESCADO
-  · Venta LISTO COMER (No hay en los tickets proporcionados)
-
+-   Encabezado (previo a productos) FIJO
+-   Parte final (después del Total).
+-   Si hay aparcamiento o no (línea extra)
+-   Productos: · Venta por unidades · Venta al peso, FRUTA y VERDURA · Venta al peso, PESCADO · Venta LISTO COMER (No hay en los tickets proporcionados)
 
 ## Importación de datos
 
 A continuacón realizaremos la importación de datos para cargar los tickets en pdf de mercadona:
 
 Primero cargamos todos los datos.
+
 ```{r}
 
 ruta_tickets<- 'data/'
@@ -89,7 +85,7 @@ kable(head(df_lineas,52),caption= "Tabla de tickets de mercadona") #Se muestra e
 
 ## Preguntas planteadas por el profesor
 
-1. ¿Cuáles son los 5 productos, de los vendidos por unidades, con más ventas? ¿Cuántas unidades de cada uno se han vendido?
+1.  ¿Cuáles son los 5 productos, de los vendidos por unidades, con más ventas? ¿Cuántas unidades de cada uno se han vendido?
 
 ```{r}
 
@@ -123,7 +119,7 @@ print(top_5_productos)
 
 ```
 
-2. Si consideramos la categoría de FRUTAS Y VERDURAS. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
+2.  Si consideramos la categoría de FRUTAS Y VERDURAS. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
 
 ```{r}
 
@@ -192,7 +188,7 @@ head(resumen, 5)
 # Los cinco productos mas vendidos de frutas y verduras son NARANJA	con 82.062Kg, PATATA con	74.800Kg, MANDARINA	con 31.186Kg, CEBOLLA con	22.000Kg y PEPINO	con 19.624Kg.
 ```
 
-3. Si consideramos la categoría de PESCADO. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
+3.  Si consideramos la categoría de PESCADO. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
 
 ```{r}
 
@@ -260,7 +256,7 @@ head(resumen_pescado, 5)
 # Los cinco productos de pescado más vendidos son rodaballo con	3.672Kg, sepia lonja con 3.584Kg, dorada con	2.934Kg, sepia fresca con	2.642Kg y sepia sucia refrig con	2.402Kg.
 ```
 
-4. Muestra mediante un gráco de líneas como ha variado el precio por kilo de las bananas y los plátanos en los tickets disponibles, a lo largo del tiempo.
+4.  Muestra mediante un gráco de líneas como ha variado el precio por kilo de las bananas y los plátanos en los tickets disponibles, a lo largo del tiempo.
 
 ```{r figura-bananas_platanos,  fig.cap="Evolución de precio por kilo de las bananas y los plátanos"}
 
@@ -301,7 +297,7 @@ ggplot(frutas, aes(x = fecha, y = precio_kg, color = tipo)) +
        color = "Tipo de Fruta")
 ```
 
-5. ¿Cuál es la procedencia de los tickets? ¿Qué ciudad/ pueblo tiene un mayor número de tickets?
+5.  ¿Cuál es la procedencia de los tickets? ¿Qué ciudad/ pueblo tiene un mayor número de tickets?
 
 ```{r tabla-procedencia}
 #Creamos un nuevo vector con los lugares de procedencia de los tickets
@@ -319,7 +315,7 @@ knitr::kable(procedencia,
 
 Como se observa en la Tabla \@ref(tab:tabla-procedencia), las diferentes ciudades o pueblos de procedencia de los tickets, siendo Valencia la que presenta el mayor número.
 
-6. Muestra mediante un diagrama el número de tickets recogidos cada día de las semana. ¿Si tuvieses que cerrar un día entre semana qué día lo harías?
+6.  Muestra mediante un diagrama el número de tickets recogidos cada día de las semana. ¿Si tuvieses que cerrar un día entre semana qué día lo harías?
 
 ```{r figura-semanas, fig.cap="Tickets recogidos cada día de las semana"}
 df_fechas <- df_lineas %>% filter(linea == "5") #filtrar fechas
@@ -347,11 +343,61 @@ Como se observa en la Tabla \@ref(fig:figura-semanas), Si tuvieses que cerrar un
 
 ## Preguntas planteadas por nosotros
 
-7. ¿Cuál es la media de ventas para cada día de la semana?
+7.  ¿Cuál es la media de ventas para cada día de la semana?
 
-8. ¿Cómo ha evolucionado el precio por unidad o por kilo de un producto específico a lo largo del tiempo? Hacer el gráfico de cómo varía el precio de un producto a lo largo del tiempo.
+    ```{r}
+    # 1. Obtener líneas con fechas
+    df_fechas <- df_lineas %>%
+      filter(str_detect(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b")) %>%
+      mutate(
+        fecha = as.Date(str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b"), format = "%d/%m/%Y")
+      ) %>%
+      select(archivo, fecha)
 
-9. ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
+    # 2. Identificar líneas que contienen la cabecera de productos
+    df_cabeceras <- df_lineas %>%
+      filter(str_detect(texto, regex("Descripción.*P\\. Unit.*Importe", ignore_case = TRUE))) %>%
+      select(archivo, linea) %>%
+      rename(linea_inicio = linea)
+
+    # 3. Unir cabeceras con la siguiente línea de cada archivo para marcar el inicio de productos
+    df_cabeceras <- df_cabeceras %>%
+      mutate(linea_inicio = as.integer(linea_inicio))
+
+    # 4. Añadir columna para marcar si una línea es un producto (posterior a la cabecera pero antes del TOTAL o siguiente ticket)
+    df_lineas_productos <- df_lineas %>%
+      left_join(df_cabeceras, by = "archivo") %>%
+      group_by(archivo) %>%
+      mutate(es_producto = linea > linea_inicio & !str_detect(texto, regex("TOTAL|IVA|TARJETA|FACTURA|ENTRADA|SALIDA|€", ignore_case = TRUE))) %>%
+      ungroup()
+
+    # 5. Filtrar solo las líneas de productos
+    df_productos <- df_lineas_productos %>%
+      filter(es_producto)
+
+    # 6. Contar número de productos por archivo
+    conteo_productos <- df_productos %>%
+      group_by(archivo) %>%
+      summarise(num_productos = n())
+
+    # 7. Unir con fechas
+    df_final <- left_join(conteo_productos, df_fechas, by = "archivo") %>%
+      mutate(dia_semana = str_to_lower(weekdays(fecha)))
+
+    # 8. Calcular media de productos comprados por día de la semana
+    media_productos_dia <- df_final %>%
+      group_by(dia_semana) %>%
+      summarise(media_productos = mean(num_productos)) %>%
+      arrange(factor(dia_semana, levels = c("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")))
+
+    print(media_productos_dia)
+
+
+    ```
+
+8.  ¿Cómo ha evolucionado el precio por unidad o por kilo de un producto específico a lo largo del tiempo? Hacer el gráfico de cómo varía el precio de un producto a lo largo del tiempo.
+
+9.  ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
 
 10. En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)
 
@@ -373,9 +419,8 @@ Como se observa en la Tabla \@ref(fig:figura-semanas), Si tuvieses que cerrar un
 
 Hemos presentado:
 
-1. Tablas:
-   - Tabla \@ref(tab:tabla-procedencia): Datos de procedencia de los tickets
-
-2. Figuras:
-   - Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
-   - Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana
+1.  Tablas:
+    -   Tabla \@ref(tab:tabla-procedencia): Datos de procedencia de los tickets
+2.  Figuras:
+    -   Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
+    -   Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana
