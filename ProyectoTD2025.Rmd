@@ -455,6 +455,9 @@ kable(IVA_filtrado, caption = "Total de IVA por tipo de porcentaje")
 ```
 
 16. ¿A qué horas se suele ir más a comprar en los supermercados? ¿Cuáles son las que menos?
+
+
+```{r}
 library(dplyr)
 library(stringr)
 library(lubridate)
