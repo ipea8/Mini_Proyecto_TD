@@ -410,18 +410,41 @@ Como se observa en la Tabla \@ref(fig:figura-semanas), Si tuvieses que cerrar un
 14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
 
 15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
+
+Cargamos las librerías necesarias:
 ```{r}
 library(knitr)
+library(dplyr) #Para manipulación de datos.
+library(stringr) #Para trabajar con texto.
+library(lubridate) #Para manejar fechas y horas.
+library(ggplot2) #Para realizar gráficos.
+```
+Queremos calcular la cantidad total de dinero recaudado en concepto de impuestos (IVA) a partir de los tickets de compra proporcionados. En este caso, nos piden centrarnos solo en 3 tipos de IVA (21%, 10% y 5%).
 
-#Extraemos las líneas de IVA del ticket
-lineas_IVA<-df_lineas %>% 
+Para poder realizar este análisis, primero debemos partir del dataframe original (df_lineas). Como los datos del IVA se pueden encontrar en diferentes lineas utilizaremos una expresión regular que detecte información sobre el IVA. Esto lo haremos mediante la función str_detect() de la librería stringr. Además, usaremos una serie de funciones para transformar y organizar los datos.
+
+```{r}
+df_IVA<-df_lineas %>% 
+  #seleccionamos las filas del dataframe que coincidan con la expresión regular.
+  filter(str_detect(texto, "^\\s*\\d{1,2}%?\\s+\\d+[,.]\\d{2}\\s+\\d+[,.]\\d{2}")) %>%
   
-  #Filtramos las líneas que coincidan con el patrón de IVA (porcentaje, base y la cuota)
-  filter(str_detect(texto, "^\\s*\\d{1,2}%?\\s+\\d+[,.]\\d{2}\\s+\\d+[,.]\\d{2}")) %>% 
+  #"^\\s*\\d{1,2}%?\\s+\\d+[,.]\\d{2}\\s+\\d+[,.]\\d{2}" es la expresión regular:
+          #"^" Asegura que el patrón comience al principio de línea.
+
+          #"\\s*" Permite que la línea pueda comenzar con espacios.
+  
+          #"\\d{1,2}" Captura uno o dos dígitos (como 5, 10 o 21).
+          
+          #"%?" Detecta el número o el número y el porcentaje.
+
+          #"\\s+" Requiere al menos un espacio entre el porcentaje y el siguiente número.
+
+          #"$" Indica el final de la línea.
   mutate(
+  #Elimina espacios innecesarios al principio, final y entre palabras
   texto=str_squish(texto),
   
-  #Extraemos tipo de IVA, base imponible y cuota
+  #Extraemos los componentes porcentaje, base y cuota con la expresión regular.
   porcentaje = str_extract(texto, "^\\d{1,2}"),
   base = str_extract(texto, "(?<=\\s)\\d+[,.]\\d{2}(?=\\s+\\d+[,.]\\d{2}$)"),
   cuota = str_extract(texto, "\\d+[,.]\\d{2}$")
@@ -429,20 +452,29 @@ lineas_IVA<-df_lineas %>%
   
   #Convertimos los strings en valores numéricos
   mutate(
+    #Se elimina el símbolo %
     porcentaje = as.numeric(str_replace(porcentaje, "%", "")),
+    #Se reemplaza comas por puntos en decimales
     base = as.numeric(str_replace(base, ",", ".")),
     cuota = as.numeric(str_replace(cuota, ",", "."))
   ) %>%
   #Seleccionamos las columnas que nos interesan
   select(archivo, linea, porcentaje, base, cuota)
 
-#Sumamos la cuota por tipo de IVA
-total_TipoIVA <- lineas_IVA %>%
+```
+Ya hemos creado el dataframe que contiene toda la información del IVA proporcionada en los tickets. Ahora a partir de este agruparemos todas las líneas por porcentaje de IVA y sumaremos todas las cuotas asociadas a los tipos de IVA. Una vez lo tengamos utilizaremos la función filter() para así centrarnos únicamente en los tres tipos de IVA que queremos analizar, que son IVA del 5%, 10% y 21%.
+
+```{r}
+
+total_TipoIVA <- df_IVA %>%
+  #Agrupamos juntas todas las filas con el mismo porcentaje de IVA.
   group_by(porcentaje) %>%
   summarise(
+    #Para cada grupo de porcentaje de IVA, calcula la suma de los valores en la columna cuota
     Cuota= sum(cuota, na.rm = TRUE),
     .groups = "drop"
   ) %>%
+  #Ordenamos los resultados de mayor a menos porcentaje de IVA.
   arrange(desc(porcentaje))
 
 #Mostrar solo los tipos que nos interesan, en este caso solo el 21%, 10% y 5%
@@ -451,52 +483,75 @@ IVA_filtrado <- total_TipoIVA %>%
 
 #Mostramos el resultado mediante una tabla.
 kable(IVA_filtrado, caption = "Total de IVA por tipo de porcentaje")
-
 ```
+La tabla revela que la mayor recaudación por IVA, con un total de 666.01€, corresponde a los productos gravados al 10%. En cambio, los productos con un IVA del 21% generaron una recaudación de 256.74€, mientras que aquellos con un IVA del 5% aportaron 8.21€.
+
+Por último, queremos verificar si se han tenido en cuenta todos los tickets y que no se haya perdido ningún dato en el proceso de extracción del IVA. Podemos comparar el número total de tickets únicos en el dataframe original (df_lineas) con el número de tickets para los cuales se pudo extraer distinta información del IVA en el dataframe lineas_IVA.
+
+```{r}
+#Aplicamos la función unique() seleccionando en el data frame la columna archivo, esta función obtiene los valores únicos. Además con la función length nos muestra la cantidad de ticket distintos.
+total_tickets <- length(unique(df_lineas$archivo))
+tickets_con_IVA <- length(unique(lineas_IVA$archivo))
+
+cat("Tickets totales:", total_tickets, "\n")
+cat("Tickets con IVA:", tickets_con_IVA, "\n")
+```
+Como podemos ver, ambos números son iguales (total de tickets únicos y tickets con el IVA extraido), entonces no hay ningún dato perdido.
+
 
 16. ¿A qué horas se suele ir más a comprar en los supermercados? ¿Cuáles son las que menos?
 
+Cargamos las librerías necesarias.
+```{r}
+library(dplyr) #Para manipulación de datos.
+library(stringr) #Para trabajar con texto.
+library(lubridate) #Para manejar fechas y horas.
+library(ggplot2) #Para realizar gráficos.
+```
+Queremos saber qué horas del día tienen mayor y menor afluencia en supermercados. Para ello, necesitamos extraer la hora de compra registrada en cada ticket.
+
+Dado que la hora puede encontrarse en diferentes líneas dentro del ticket, aplicamos una expresión regular que detecta el formato "hh:mm". Esto se realiza mediante la función str_extract() de la librería stringr. Además, usamos una serie de funciones para transformar y organizar los datos.
+
+Este proceso nos permite construir un nuevo data frame (df_horas) con la hora de compra de cada ticket.
 
 ```{r}
-library(dplyr)
-library(stringr)
-library(lubridate)
-library(ggplot2)
-
-#1. Queremos extraer la hora de todos los tickets y para eso realizamos una serie de pasos:
-
-# La hora se encuentra en todos los tickets en la línea 5. Utilizamos la función filter() para extraer la línea 5 de cada ticket.
 df_horas <- df_lineas %>%
-  filter(linea == 5) %>%
   mutate(
-    #la función str_extract() busca una hora en formato "hh:mm" usando expresiones regulares
-    hora_texto = str_extract(texto, "\\b\\d{1,2}:\\d{2}\\b"), 
+    #buscamos una hora en formato "hh:mm" usando expresiones regulares.
+    hora_texto = str_extract(texto, "\\b\\d{1,2}:\\d{2}\\b") 
+        
     #"\\b\\d{1,2}:\\d{2}\\b" es la expresión regular:
     
-      #"\\b" significa el límite de palabra, se asegura que la coincidencia esté al inicio o al final de una palabra.
+              #"\\b" significa el límite de palabra, se asegura que la coincidencia esté al inicio o al final de una palabra.
+                  
+              #"\\d{1,2}" Coincide con 1 o 2 dígitos (para horas como 8 o 14)
+                  
+              #":" Dos puntos, separa la hora y los minutos
+              
+              #"\\d{2}" Coincide con exactamente 2 dígitos (para minutos como 05 o 41).    
     
-      #"\\d{1,2}" Coincide con 1 o 2 dígitos (para horas como 8 o 14)
-      
-      #":" Dos puntos, separa la hora y los minutos
-    
-      #"\\d{2}" Coincide con exactamente 2 dígitos (para minutos como 05 o 41).
-    
-      #"\\b" es el límite de palabra (el final)
-
-    #la función hour() extrae solo la hora numérica (selecciona 14 en vez de 14:41).La función hm() convierte la hora como texto     a un objeto de tiempo.
-    hora = hour(hm(hora_texto)) 
+              #"\\b" es el límite de palabra (el final)
+  )%>% 
   
-  ) %>%
-  #Esta función selecciona lo que nos queremos quedar que es la hora y el nombre del   archivo.
-  select(archivo, hora)
+  #!is.na() crea un vector donde si hay valores en hora_texto es TRUE y donde no haya es FALSE. Utilizando la función filter() filtramos las líneas TRUE, en las que hay       valores. 
+  filter(!is.na(hora_texto)) %>%
+  #Utilizamos group_by que agrupa todas las líneas que pertenecen al mismo ticket.
+  group_by(archivo)%>%
+  #Dentro de cada agrupación de ticket (que ahora solo contiene las líneas con hora), selecciona la primera de esas líneas.
+  slice_head(n=1)%>%
+  mutate(
+     #la función hour() extrae solo la hora numérica (selecciona 14 en vez de 14:41).La función hm() convierte la hora como texto a un objeto de tiempo.
+     hora = hour(hm(hora_texto))) %>%
+     #Seleccionamos la hora y el nombre del archivo.
+     select(archivo, hora)
+```
+A partir del nuevo data frame (df_horas) contamos con que frecuencia de tickets por cada hora del día y lo visualizamos en un gráfico de barras. Así, podemos identificar con claridad las horas pico de afluencia y las horas más tranquilas.
 
-#2.Queremos saber la hora a la que se suele ir más al superpermercado:
-
-#Utilizamos la función count() (aplicandola al data frame creado antes donde hemos extraído las horas de los tickets). Esta función cuenta cuántos tickets hay por cada hora del día (de 0 a 23) 
+```{r}
+#Utilizamos la función count() (aplicandola al data frame df_horas). Esta función cuenta cuántos tickets hay por cada hora del día (de 0 a 23) 
 FrecuenciaHora_supermercado<- df_horas %>% count(hora)
 
-#3. Para poder ver los resultados de una manera más completa, realizamos una gráfico que muestre qué hora es más frecuente.
-
+#Realizamos una gráfico que muestre qué hora es más frecuente:
 #Utilizamos la función ggpplot() y geom_bar() que crean un gráfico de barras.
 ggplot(FrecuenciaHora_supermercado, aes(x = hora, y = n)) +
   geom_bar(stat = "identity", fill = "lightgreen") +
@@ -507,14 +562,21 @@ ggplot(FrecuenciaHora_supermercado, aes(x = hora, y = n)) +
   ) +
   #Esta función muestra todas las horas del 0 al 23 en el eje X.
   scale_x_continuous(breaks = 0:23) +
-  #Esta función aplica un diseño mucho más limpio y simple ya que elimina el fondo     gris, pone las líneas de las cuadrículas más ligeras etc.
+  #Esta función aplica un diseño mucho más limpio y simple ya que elimina el fondo gris, pone las líneas de las cuadrículas más ligeras etc.
   theme_minimal()
-
-#El gráfico de barras muestra que las horas de mayor afluencia en el supermercado son las 20h y las 19h, con poco más de 50 y 40 tickets registrados respectivamente. En cambio, las horas de menor afluencia, sin considerar el horario de cierre (8h y 22h), son las 10h y las 9h, con menos de 5 tickets a las 10h y menos de 10 a las 9h.
-
 ```
+El gráfico de barras muestra que las horas de mayor afluencia en el supermercado son las 20h y las 19h, con poco más de 50 y 40 tickets registrados respectivamente. En cambio, las horas de menor afluencia, sin considerar el horario de cierre (8h y 22h), son las 10h y las 9h, con menos de 5 tickets a las 10h y menos de 10 a las 9h.
 
+Por último, queremos verificar si se han tenido en cuenta todos los tickets y que no se haya perdido ningún dato en el proceso de extracción de la hora. Podemos comparar el número total de tickets únicos en el dataframe original (df_lineas) con el número de tickets para los cuales se pudo extraer una hora en el dataframe df_horas.
 
+```{r}
+#Aplicamos la función unique() seleccionando en el data frame la columna archivo, esta función obtiene los valores únicos. Además con la función length nos muestra la cantidad de ticket distintos.
+length(unique(df_lineas$archivo))
+
+#Ahora seleccionamos las columnas del nuevo dataframe donde se encuentra solo las horas de cada ticket.
+nrow(df_horas)
+```
+Como podemos ver, ambos números son iguales (total de tickets únicos y tickets con hora extraída), entonces no hay ningún dato perdido.
 
 
 17. ¿Qué método de pago es más frecuente en los tickets: tarjeta o efectivo? Muéstralo mediante un box plot ¿Cuánto se ha gastado en total con cada método de pago?
