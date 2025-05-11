@@ -411,14 +411,6 @@ Como se observa en la Tabla \@ref(fig:figura-semanas), Si tuvieses que cerrar un
 
 15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
 
-Cargamos las librerías necesarias:
-```{r}
-library(knitr)
-library(dplyr) #Para manipulación de datos.
-library(stringr) #Para trabajar con texto.
-library(lubridate) #Para manejar fechas y horas.
-library(ggplot2) #Para realizar gráficos.
-```
 Queremos calcular la cantidad total de dinero recaudado en concepto de impuestos (IVA) a partir de los tickets de compra proporcionados. En este caso, nos piden centrarnos solo en 3 tipos de IVA (21%, 10% y 5%).
 
 Para poder realizar este análisis, primero debemos partir del dataframe original (df_lineas). Como los datos del IVA se pueden encontrar en diferentes lineas utilizaremos una expresión regular que detecte información sobre el IVA. Esto lo haremos mediante la función str_detect() de la librería stringr. Además, usaremos una serie de funciones para transformar y organizar los datos.
@@ -464,7 +456,7 @@ df_IVA<-df_lineas %>%
 ```
 Ya hemos creado el dataframe que contiene toda la información del IVA proporcionada en los tickets. Ahora a partir de este agruparemos todas las líneas por porcentaje de IVA y sumaremos todas las cuotas asociadas a los tipos de IVA. Una vez lo tengamos utilizaremos la función filter() para así centrarnos únicamente en los tres tipos de IVA que queremos analizar, que son IVA del 5%, 10% y 21%.
 
-```{r}
+```{r tabla-TiposIVA}
 
 total_TipoIVA <- df_IVA %>%
   #Agrupamos juntas todas las filas con el mismo porcentaje de IVA.
@@ -501,13 +493,6 @@ Como podemos ver, ambos números son iguales (total de tickets únicos y tickets
 
 16. ¿A qué horas se suele ir más a comprar en los supermercados? ¿Cuáles son las que menos?
 
-Cargamos las librerías necesarias.
-```{r}
-library(dplyr) #Para manipulación de datos.
-library(stringr) #Para trabajar con texto.
-library(lubridate) #Para manejar fechas y horas.
-library(ggplot2) #Para realizar gráficos.
-```
 Queremos saber qué horas del día tienen mayor y menor afluencia en supermercados. Para ello, necesitamos extraer la hora de compra registrada en cada ticket.
 
 Dado que la hora puede encontrarse en diferentes líneas dentro del ticket, aplicamos una expresión regular que detecta el formato "hh:mm". Esto se realiza mediante la función str_extract() de la librería stringr. Además, usamos una serie de funciones para transformar y organizar los datos.
@@ -547,7 +532,7 @@ df_horas <- df_lineas %>%
 ```
 A partir del nuevo data frame (df_horas) contamos con que frecuencia de tickets por cada hora del día y lo visualizamos en un gráfico de barras. Así, podemos identificar con claridad las horas pico de afluencia y las horas más tranquilas.
 
-```{r}
+```{r figura-Frecuenciahoras}
 #Utilizamos la función count() (aplicandola al data frame df_horas). Esta función cuenta cuántos tickets hay por cada hora del día (de 0 a 23) 
 FrecuenciaHora_supermercado<- df_horas %>% count(hora)
 
@@ -581,12 +566,64 @@ Como podemos ver, ambos números son iguales (total de tickets únicos y tickets
 
 17. ¿Qué método de pago es más frecuente en los tickets: tarjeta o efectivo? Muéstralo mediante un box plot ¿Cuánto se ha gastado en total con cada método de pago?
 
+Nos piden averiguar cual es el método de pago que más se repite: efectivo o tajeta.
+
+En este caso se repite el hecho de que la forma de pago puede encontrarse en diferentes líneas dentro del ticket, por eso vamos a aplicar la funciñon str_detect() para ver si es Tarjeta o Efectivo. Además queremos calcular también el importe total de cada método de pago. 
+
+```{r}
+resumen_tickets <- df_lineas %>%
+  #Agrupamos todas las líneas que pertenecen al mismo ticket.
+  group_by(archivo) %>%  
+  #Determinamos el tipo de pago
+  summarise(Metodo_Pago = case_when(
+    
+#Buscamos en todas las líneas de texto del ticket si alguna contiene Tarjeta Bancaria o Efectivo (da igual que este en mayúsculas o minúsculas) y lo asignamos a       Efectivo o a Tarjeta.
+  any(str_detect(texto, regex("TARJETA BANCARIA | TARJ. BANCARIA | TARJ BANCARIA", ignore_case = TRUE))) ~ "Tarjeta",
+  any(str_detect(texto, regex("EFECTIVO|PAGO.?EFECTIVO|PAGADO EN EFECTIVO", ignore_case = TRUE))) ~ "Efectivo",
+  
+  #Si no se cumple ninguna condición anterior se asigna "Desconocido" como método de pago.
+  TRUE ~ "Desconocido"
+),
+    # Extraemos el importe total del ticket
+    Importe_Total = {
+      #Busca la linea de texto que contiene la frase "TOTAL (€)"
+      total_linea <- texto[str_detect(texto, "TOTAL \\(€\\)")] 
+      #Extrae de esa línea un patrón que representa un número con una coma como separador decimal
+      importe <- str_extract(total_linea, "\\d+,\\d{2}")         
+      #Si se encuentra un importe, reemplaza la coma por un punto para convertirlo a formato numérico. Si no se encuentra la línea del total o el patrón del importe, asigna       un valor NA.
+      if (!is.na(importe)) {
+        as.numeric(str_replace(importe, ",", "."))} 
+      else {
+        #Si no se encuentra, dejamos un valor NA
+        NA_real_}}
+  ) %>%
+  #Eliminamos aquellos tickets donde no se detectó importe total
+  filter(!is.na(Importe_Total))  
+```
+Tenemos ya el dataframe resumen_tickets que contiene solo las líneas de texto que hablan del método de pago. A partir de este dataframe calcularemos el importe total de cada método de pago. 
+
+```{r}
+#Agrupamos por método de pago para ver cuánto se ha gastado con cada uno
+totales_por_metodo <- resumen_tickets %>%
+  group_by(Metodo_Pago) %>%
+  #Sumamos los importes totales por tipo de pago
+  summarise(Total_Gastado = sum(Importe_Total)) %>% 
+  #Ordenamos de mayor a menor gasto
+  arrange(desc(Total_Gastado))  
+
+# Mostramos e el total gastado por método de pago
+kable(totales_por_metodo, caption = "Importe total de cada método de pago")
+```
+Como se puede observar cada ticket ha coincidido en el método de pago, todos han sido pagados con tarjeta. También vemos que el importe total de todos los tickets es 13.649,8€. 
+
 # Conclusión
 
 Hemos presentado:
 
 1.  Tablas:
     -   Tabla \@ref(tab:tabla-procedencia): Datos de procedencia de los tickets
+    -   Tabla \@ref(tab:tabla-TiposIVA): Dinero que ha recaudado el IVA del 5%, 10% y 21%.
 2.  Figuras:
     -   Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
     -   Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana
+    -   Figura \@ref(fig: figura-Frecuenciahoras): Horas de mayor y menor afluencia en el supermercado.
