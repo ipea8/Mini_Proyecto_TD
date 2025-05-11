@@ -600,7 +600,7 @@ resumen_tickets <- df_lineas %>%
   #Eliminamos aquellos tickets donde no se detectó importe total
   filter(!is.na(Importe_Total))  
 ```
-Tenemos ya el dataframe resumen_tickets que contiene solo las líneas de texto que hablan del método de pago. A partir de este dataframe calcularemos el importe total de cada método de pago. 
+Tenemos ya el dataframe resumen_tickets que contiene solo las líneas de texto que mencionan el método de pago. A partir de este dataframe calcularemos el importe total de cada método de pago. 
 
 ```{r}
 #Agrupamos por método de pago para ver cuánto se ha gastado con cada uno
