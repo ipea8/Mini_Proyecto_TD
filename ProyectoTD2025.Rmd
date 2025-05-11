@@ -127,13 +127,13 @@ print(top_5_productos)
 productos_frutas_verduras <- c("manzana", "plátano", "naranja", "fresa", "pera", "kiwi", "sandía", "melon", "tomate", "lechuga", "pepino", "pimiento", "berenjena", "calabacín", "ajo", "cebolla", "zanahoria", "patata", "aguacate", "brocoli", "col", "apio", "alcachofa", "espárrago", "frambuesa", "cereza", "mango", "limón", "mandarina")
 
 # Buscar líneas del df_lineas que contengan alguna de estas palabras
-frutas_lineas_idx <- grep(paste(productos_frutas_verduras, collapse = "|"), tolower(df_lineas$texto))
+frutas_verduras <- grep(paste(productos_frutas_verduras, collapse = "|"), tolower(df_lineas$texto))
 
 # Crear un nuevo data.frame para guardar resultados
 resultados <- data.frame(producto = character(), cantidad_kg = numeric(), stringsAsFactors = FALSE)
 
 # Recorremos cada línea que contiene una fruta o verdura
-for (i in frutas_lineas_idx) {
+for (i in frutas_verduras) {
   linea_producto <- df_lineas$texto[i]
  #Extraer nombre del producto
   producto <- gsub("\\s*\\d+\\s*(kg|KG).*" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (\\s*: puede ser que tenga o no espacios en blanco, \\d+: uno o mas digitos, \\s*: espacios opcionales entre el numero y el kilo, kg: que sean kilos y .*:quiere decir que puede ser que detras tenga otra cosa)
@@ -176,14 +176,14 @@ resultados$producto <- trimws(resultados$producto)                      # Quita 
 
 
 # Agrupar y resumir por producto ya normalizado
-resumen <- resultados %>%
+top_5_frutas_verduras <- resultados %>%
   filter(!is.na(cantidad_kg)) %>%
   group_by(producto) %>%
   summarise(kilos_totales = sum(cantidad_kg)) %>%
   arrange(desc(kilos_totales))
 
 # Ver los 5 más vendidos
-head(resumen, 5)
+head(top_5_frutas_verduras, 5)
 
 # Los cinco productos mas vendidos de frutas y verduras son NARANJA	con 82.062Kg, PATATA con	74.800Kg, MANDARINA	con 31.186Kg, CEBOLLA con	22.000Kg y PEPINO	con 19.624Kg.
 ```
@@ -196,13 +196,13 @@ head(resumen, 5)
 productos_pescado <- c("merluza", "salmón", "bacalao", "atún", "lubina", "dorada", "boquerón", "anchoa", "gamba", "calamar", "sepia", "pulpo", "lenguado", "rape", "pez espada", "rodaballo", "jurel", "caballa", "sardina", "mejillón")
 
 # Buscar líneas que contengan alguno de esos productos
-pescado_lineas_idx <- grep(paste(productos_pescado, collapse = "|"), tolower(df_lineas$texto))
+pescado <- grep(paste(productos_pescado, collapse = "|"), tolower(df_lineas$texto))
 
 # Inicializar el data.frame vacío
 resultados_pescado <- data.frame(producto = character(), cantidad_kg = numeric(), stringsAsFactors = FALSE)
 
 # Bucle para recorrer cada línea con pescado
-for (i in pescado_lineas_idx) {
+for (i in pescado) {
   linea_producto <- df_lineas$texto[i]
   # Extraer solo el nombre del producto
   producto <- gsub("\\s*\\d+\\s*(kg|KG).*" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (\\s*: puede ser que tenga o no espacios en blanco, \\d+: uno o mas digitos, \\s*: espacios opcionales entre el numero y el kilo, kg: que sean kilos y .*:quiere decir que puede ser que detras tenga otra cosa)
@@ -244,14 +244,14 @@ resultados_pescado$producto <- gsub("\\s+" # Esto quiere decir que del texto del
 resultados_pescado$producto <- trimws(resultados_pescado$producto)
 
 # Agrupar y sumar los kilos
-resumen_pescado <- resultados_pescado %>%
+top_5_pescado <- resultados_pescado %>%
   filter(!is.na(cantidad_kg)) %>%
   group_by(producto) %>%
   summarise(kilos_totales = sum(cantidad_kg)) %>%
   arrange(desc(kilos_totales))
 
 # Mostrar los 5 productos de pescado más vendidos
-head(resumen_pescado, 5)
+head(top_5_pescado, 5)
 
 # Los cinco productos de pescado más vendidos son rodaballo con	3.672Kg, sepia lonja con 3.584Kg, dorada con	2.934Kg, sepia fresca con	2.642Kg y sepia sucia refrig con	2.402Kg.
 ```
