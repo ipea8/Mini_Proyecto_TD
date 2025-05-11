@@ -455,6 +455,64 @@ kable(IVA_filtrado, caption = "Total de IVA por tipo de porcentaje")
 ```
 
 16. ¿A qué horas se suele ir más a comprar en los supermercados? ¿Cuáles son las que menos?
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(ggplot2)
+
+#1. Queremos extraer la hora de todos los tickets y para eso realizamos una serie de pasos:
+
+# La hora se encuentra en todos los tickets en la línea 5. Utilizamos la función filter() para extraer la línea 5 de cada ticket.
+df_horas <- df_lineas %>%
+  filter(linea == 5) %>%
+  mutate(
+    #la función str_extract() busca una hora en formato "hh:mm" usando expresiones regulares
+    hora_texto = str_extract(texto, "\\b\\d{1,2}:\\d{2}\\b"), 
+    #"\\b\\d{1,2}:\\d{2}\\b" es la expresión regular:
+    
+      #"\\b" significa el límite de palabra, se asegura que la coincidencia esté al inicio o al final de una palabra.
+    
+      #"\\d{1,2}" Coincide con 1 o 2 dígitos (para horas como 8 o 14)
+      
+      #":" Dos puntos, separa la hora y los minutos
+    
+      #"\\d{2}" Coincide con exactamente 2 dígitos (para minutos como 05 o 41).
+    
+      #"\\b" es el límite de palabra (el final)
+
+    #la función hour() extrae solo la hora numérica (selecciona 14 en vez de 14:41).La función hm() convierte la hora como texto     a un objeto de tiempo.
+    hora = hour(hm(hora_texto)) 
+  
+  ) %>%
+  #Esta función selecciona lo que nos queremos quedar que es la hora y el nombre del   archivo.
+  select(archivo, hora)
+
+#2.Queremos saber la hora a la que se suele ir más al superpermercado:
+
+#Utilizamos la función count() (aplicandola al data frame creado antes donde hemos extraído las horas de los tickets). Esta función cuenta cuántos tickets hay por cada hora del día (de 0 a 23) 
+FrecuenciaHora_supermercado<- df_horas %>% count(hora)
+
+#3. Para poder ver los resultados de una manera más completa, realizamos una gráfico que muestre qué hora es más frecuente.
+
+#Utilizamos la función ggpplot() y geom_bar() que crean un gráfico de barras.
+ggplot(FrecuenciaHora_supermercado, aes(x = hora, y = n)) +
+  geom_bar(stat = "identity", fill = "lightgreen") +
+  labs(
+    title = "Frecuencia de compras por hora del día",
+    x = "Hora (24h)",
+    y = "Número de tickets"
+  ) +
+  #Esta función muestra todas las horas del 0 al 23 en el eje X.
+  scale_x_continuous(breaks = 0:23) +
+  #Esta función aplica un diseño mucho más limpio y simple ya que elimina el fondo     gris, pone las líneas de las cuadrículas más ligeras etc.
+  theme_minimal()
+
+#El gráfico de barras muestra que las horas de mayor afluencia en el supermercado son las 20h y las 19h, con poco más de 50 y 40 tickets registrados respectivamente. En cambio, las horas de menor afluencia, sin considerar el horario de cierre (8h y 22h), son las 10h y las 9h, con menos de 5 tickets a las 10h y menos de 10 a las 9h.
+
+```
+
+
+
 
 17. ¿Qué método de pago es más frecuente en los tickets: tarjeta o efectivo? Muéstralo mediante un box plot ¿Cuánto se ha gastado en total con cada método de pago?
 
