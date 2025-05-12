@@ -9,8 +9,8 @@ author:
 - Edurne Serigó Troyano
 date: "`r Sys.Date()`"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -52,12 +52,12 @@ Para este proyecto se ha utilizado un conjunto de tickets de compra proporcionad
 
 El análisis de datos se realiza utilizando el lenguaje de programación R.
 
-Como sabemos, la librería `pdftools` y la función `pdf_text` sirven para cargar el contenido del ticket en un vector de texto. Por lo tanto, los tickets serán leídos uno a uno utilizando la función `pdf_text()` de la librería `pdftools`, que permite convertir el contenido del PDF en texto plano. A partir de ese texto, se ha extraído:
+Como sabemos, la librería `pdftools` y la función `pdf_text` sirven para cargar el contenido del ticket en un vector de texto. Por lo tanto, los tickets serán leídos uno a uno utilizando la función `pdf_text()` de la librería `pdftools`. A partir de ese texto, se ha extraído:
 
 -   Encabezado (previo a productos) FIJO
 -   Parte final (después del Total).
 -   Si hay aparcamiento o no (línea extra)
--   Productos: · Venta por unidades · Venta al peso, FRUTA y VERDURA · Venta al peso, PESCADO · Venta LISTO COMER (No hay en los tickets proporcionados)
+-   Productos: Venta por unidades, Venta al peso (FRUTA y VERDURA) y Venta al peso (PESCADO)
 
 ## Importación de datos
 
@@ -414,7 +414,9 @@ Como se observa en la Tabla, si se tuviese que cerrar un día entre semana seria
 
 7.  ¿Cuál es la media de ventas para cada día de la semana?
 
-Queremos saber cuántos productos en promedio se compran por ticket en cada día de la semana. Esto nos permite ver si hay algún día de la semana con más productos por ticket, lo que puede ayudar a tomar decisiones sobre la operación.
+Este código tiene como objetivo procesar y analizar tickets de compra en formato PDF. Primero, extrae la fecha de cada ticket y la convierte en un formato de fecha legible por R. Luego, identifica dónde comienzan los productos dentro del ticket para separar esa sección del resto del contenido. A partir de ahí, filtra solo las líneas que corresponden a productos realmente comprados.
+
+Después, cuenta cuántos productos hay por ticket y asocia esta cantidad con su respectiva fecha. También se añade el día de la semana en que se hizo la compra. Finalmente, se agrupan los tickets por día de la semana y se calcula la media de productos comprados por día, ordenando los días de forma cronológica para facilitar el análisis de patrones de consumo.
 
 ```{r}
 # 1. Obtener líneas con fechas
@@ -424,65 +426,37 @@ Queremos saber cuántos productos en promedio se compran por ticket en cada día
         fecha = as.Date(str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b"), format = "%d/%m/%Y")
       ) %>%
       select(archivo, fecha)
-```
 
-1. Este código busca líneas en el texto que contienen una fecha en el formato dd/mm/yyyy utilizando una expresión regular. Luego, extrae estas fechas y las convierte en un formato de fecha que R pueda reconocer (Date), lo que facilita su manipulación y análisis. Finalmente, guarda el nombre del archivo del ticket y la fecha extraída, asociando así cada ticket con su fecha correspondiente para poder hacer análisis temporales posteriormente.
-
-```{r}
 # 2. Identificar líneas que contienen la cabecera de productos
     df_cabeceras <- df_lineas %>%
       filter(str_detect(texto, regex("Descripción.*P\\. Unit.*Importe", ignore_case = TRUE))) %>%
       select(archivo, linea) %>%
       rename(linea_inicio = linea)
-```
-
-2. El código localiza la línea que marca el inicio de la lista de productos dentro de cada ticket, que generalmente contiene palabras clave. Utilizando esta información, guarda el número de esa línea para identificar el punto exacto donde comienza la sección de productos en cada ticket, lo cual es crucial para poder separar correctamente los productos del resto de la información del ticket.
-
-```{r}
+    
 # 3. Unir cabeceras con la siguiente línea de cada archivo para marcar el inicio de productos
     df_cabeceras <- df_cabeceras %>%
       mutate(linea_inicio = as.integer(linea_inicio))
-```
-
-3. El código une la información de la cabecera con todas las líneas del ticket, lo que permite asociar correctamente cada línea de producto con su respectiva cabecera. Luego, marca como "es_producto = TRUE" aquellas líneas que aparecen después de la cabecera, asegurándose de que no contienen palabras clave que indican el final del ticket. Esto ayuda a identificar y separar correctamente las líneas que corresponden a productos de las que no lo son.
-
-```{r}
+    
 # 4. Añadir columna para marcar si una línea es un producto (posterior a la cabecera pero antes del TOTAL o siguiente ticket)
     df_lineas_productos <- df_lineas %>%
       left_join(df_cabeceras, by = "archivo") %>%
       group_by(archivo) %>%
       mutate(es_producto = linea > linea_inicio & !str_detect(texto, regex("TOTAL|IVA|TARJETA|FACTURA|ENTRADA|SALIDA|€", ignore_case = TRUE))) %>%
       ungroup()
-```
 
-4. Con este código, nos quedamos solo con las líneas que contienen productos realmente comprados.
-
-```{r}
 # 5. Filtrar solo las líneas de productos
     df_productos <- df_lineas_productos %>%
       filter(es_producto)
-```
 
-5. Este código, cuenta cuántos productos hay en cada ticket (archivo).
-
-```{r}
 # 6. Contar número de productos por archivo
     conteo_productos <- df_productos %>%
       group_by(archivo) %>%
       summarise(num_productos = n())
-```
 
-6. Este código une la cantidad de productos por cada ticket con la fecha correspondiente, utilizando la clave común "archivo", que identifica el ticket. Luego, agrega una columna con el día de la semana (en minúsculas), que extrae el nombre del día a partir de la fecha, transformándolo en una cadena de texto en formato de día de la semana. Esto permite identificar qué día de la semana corresponde cada ticket.
-
-```{r}
 # 7. Unir con fechas
     df_final <- left_join(conteo_productos, df_fechas, by = "archivo") %>%
       mutate(dia_semana = str_to_lower(weekdays(fecha)))
-```
 
-7. Este código agrupa los tickets por el día de la semana, utilizando la columna "dia_semana", que contiene el nombre del día correspondiente a cada fecha. Luego, calcula la media de productos por ticket para cada día de la semana. Finalmente, organiza los días de la semana en su orden natural para asegurar que los días se muestren de manera secuencial, y no alfabéticamente.
-
-```{r}
 #  8. Calcular media de productos comprados por día de la semana
     media_productos_dia <- df_final %>%
       group_by(dia_semana) %>%
@@ -504,7 +478,7 @@ Buscamos identificar cuál es el producto que más se compra por unidades en los
 
 Una vez filtradas esas líneas, el código divide cada una de ellas en varias columnas separadas: unidades, descripción del producto, precio por unidad e importe total. Después se realiza una limpieza adicional para eliminar productos que no corresponden a una venta real, que a veces aparecen registradas pero no deben considerarse en el análisis.
 
-Luego, se seleccionan únicamente las columnas de unidades y descripción del producto, ya que el análisis se centra en saber qué producto se ha comprado en la mayor cantidad de unidades. Estos datos se ordenan de mayor a menor en función del número de unidades, con el fin de destacar los productos que se compran en grandes cantidades. Finalmente, se muestra el primer resultado de esta lista ordenada, que corresponde al producto más comprado por unidades en una sola transacción. Esta información puede ser útil para entender hábitos de consumo masivo o productos populares en lotes.
+Luego, se seleccionan únicamente las columnas de unidades y descripción del producto, ya que el análisis se centra en saber qué producto se ha comprado en la mayor cantidad de unidades. Estos datos se ordenan de mayor a menor en función del número de unidades, con el fin de destacar los productos que se compran en grandes cantidades. Finalmente, se muestra el primer resultado de esta lista ordenada, que corresponde al producto más comprado por unidades en una sola transacción.
 
 ```{r}
 #Filtramos solo las líneas que contengan productos por unidades
