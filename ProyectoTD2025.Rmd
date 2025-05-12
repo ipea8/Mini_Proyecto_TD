@@ -8,7 +8,9 @@ author:
 - Iván Pérez Alonso
 - Edurne Serigó Troyano
 date: "`r Sys.Date()`"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -483,7 +485,7 @@ Por último, queremos verificar si se han tenido en cuenta todos los tickets y q
 ```{r}
 #Aplicamos la función unique() seleccionando en el data frame la columna archivo, esta función obtiene los valores únicos. Además con la función length nos muestra la cantidad de ticket distintos.
 total_tickets <- length(unique(df_lineas$archivo))
-tickets_con_IVA <- length(unique(lineas_IVA$archivo))
+tickets_con_IVA <- length(unique(df_IVA$archivo))
 
 cat("Tickets totales:", total_tickets, "\n")
 cat("Tickets con IVA:", tickets_con_IVA, "\n")
