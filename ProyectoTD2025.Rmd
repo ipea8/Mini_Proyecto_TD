@@ -413,7 +413,7 @@ Como se observa en la Tabla \@ref(fig:figura-semanas), Si tuvieses que cerrar un
 
 Queremos calcular la cantidad total de dinero recaudado en concepto de impuestos (IVA) a partir de los tickets de compra proporcionados. En este caso, nos piden centrarnos solo en 3 tipos de IVA (21%, 10% y 5%).
 
-Para poder realizar este análisis, primero debemos partir del dataframe original (df_lineas). Como los datos del IVA se pueden encontrar en diferentes lineas utilizaremos una expresión regular que detecte información sobre el IVA. Esto lo haremos mediante la función str_detect() de la librería stringr. Además, usaremos una serie de funciones para transformar y organizar los datos.
+Para poder realizar este análisis, primero debemos partir del dataframe original (df_lineas). Como los datos del IVA se pueden encontrar en diferentes lineas utilizaremos una expresión regular que detecte información sobre el IVA. Esto lo haremos mediante la función str_detect() de la librería stringr. Además usaremos una serie de funciones para transformar y organizar los datos.
 
 ```{r}
 df_IVA<-df_lineas %>% 
@@ -495,7 +495,7 @@ Como podemos ver, ambos números son iguales (total de tickets únicos y tickets
 
 Queremos saber qué horas del día tienen mayor y menor afluencia en supermercados. Para ello, necesitamos extraer la hora de compra registrada en cada ticket.
 
-Dado que la hora puede encontrarse en diferentes líneas dentro del ticket, aplicamos una expresión regular que detecta el formato "hh:mm". Esto se realiza mediante la función str_extract() de la librería stringr. Además, usamos una serie de funciones para transformar y organizar los datos.
+Dado que la hora puede encontrarse en diferentes líneas dentro del ticket, aplicamos una expresión regular que detecta el formato "hh:mm". Esto se realiza mediante la función str_extract() de la librería stringr. Además usamos una serie de funciones para transformar y organizar los datos.
 
 Este proceso nos permite construir un nuevo data frame (df_horas) con la hora de compra de cada ticket.
 
@@ -568,7 +568,7 @@ Como podemos ver, ambos números son iguales (total de tickets únicos y tickets
 
 Nos piden averiguar cual es el método de pago que más se repite: efectivo o tajeta.
 
-En este caso se repite el hecho de que la forma de pago puede encontrarse en diferentes líneas dentro del ticket, por eso vamos a aplicar la funciñon str_detect() para ver si es Tarjeta o Efectivo. Además queremos calcular también el importe total de cada método de pago. 
+En este caso se repite el hecho de que la forma de pago puede encontrarse en diferentes líneas dentro del ticket, por eso vamos a aplicar la funcion str_detect() para ver si es Tarjeta o Efectivo. Además queremos calcular también el importe total de cada método de pago. 
 
 ```{r}
 resumen_tickets <- df_lineas %>%
@@ -626,4 +626,4 @@ Hemos presentado:
 2.  Figuras:
     -   Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
     -   Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana
-    -   Figura \@ref(fig: figura-Frecuenciahoras): Horas de mayor y menor afluencia en el supermercado.
+    -   Figura \@ref(fig:figura-Frecuenciahoras): Horas de mayor y menor afluencia en el supermercado.
