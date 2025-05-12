@@ -258,7 +258,7 @@ head(top_5_pescado, 5)
 # Los cinco productos de pescado más vendidos son rodaballo con	3.672Kg, sepia lonja con 3.584Kg, dorada con	2.934Kg, sepia fresca con	2.642Kg y sepia sucia refrig con	2.402Kg.
 ```
 
-4.  Muestra mediante un gráco de líneas como ha variado el precio por kilo de las bananas y los plátanos en los tickets disponibles, a lo largo del tiempo.
+4.  Muestra mediante un gráfico de líneas como ha variado el precio por kilo de las bananas y los plátanos en los tickets disponibles, a lo largo del tiempo.
 
 ```{r figura-bananas_platanos,  fig.cap="Evolución de precio por kilo de las bananas y los plátanos"}
 
