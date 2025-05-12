@@ -470,6 +470,31 @@ Finalmente, en esta tabla podemos ver el resultado: la media de productos los lu
 
 8.  ¿Cómo ha evolucionado el precio por unidad o por kilo de un producto específico a lo largo del tiempo? Hacer el gráfico de cómo varía el precio de un producto a lo largo del tiempo.
 
+```{r}
+# Verificar la estructura del dataframe 'platanos'
+str(platanos)
+
+# Extraer el precio por kg de la columna 'info'
+platanos$precio_kg <- as.numeric(gsub(",", ".", str_extract(platanos$info, "\\d{1,2}[.,]?\\d{2}")))  # Reemplazar coma por punto
+
+# Convertir las fechas a formato Date
+platanos$fecha <- as.Date(platanos$fecha, format = "%Y-%m-%d")
+
+# Crear un nuevo dataframe con fecha y precio por kg
+df_platanos_precio <- platanos %>%
+  select(fecha, precio_kg)
+
+# Verificar las primeras filas del dataframe creado
+head(df_platanos_precio)
+
+# Graficar la evolución del precio por kilo a lo largo del tiempo
+ggplot(df_platanos_precio, aes(x = fecha, y = precio_kg)) +
+  geom_line() +
+  labs(title = "Evolución del precio de los plátanos por kg",
+       x = "Fecha", y = "Precio por kg (€)") +
+  theme_minimal()
+```
+
 9.  ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
 
 10. En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)
