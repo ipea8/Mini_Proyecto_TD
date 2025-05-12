@@ -831,12 +831,11 @@ Como se puede observar cada ticket ha coincidido en el método de pago, todos ha
 
 # Conclusión
 
-Hemos presentado:
+A lo largo de este proyecto, se ha desarrollado una herramienta funcional y automatizada en R para la lectura, limpieza, estructuración y análisis de tickets de compra en formato PDF, concretamente de supermercados Mercadona. Este sistema permite transformar documentos no estructurados en un conjunto de datos ordenado y analizable, lo que constituye un paso esencial en el procesamiento de información real proveniente del ámbito del consumo diario.
 
-1.  Tablas:
-    -   Tabla \@ref(tab:tabla-procedencia): Datos de procedencia de los tickets
-    -   Tabla \@ref(tab:tabla-TiposIVA): Dinero que ha recaudado el IVA del 5%, 10% y 21%.
-2.  Figuras:
-    -   Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
-    -   Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana
-    -   Figura \@ref(fig:figura-Frecuenciahoras): Horas de mayor y menor afluencia en el supermercado.
+Gracias al uso de librerías como pdftools, dplyr y stringr, ha sido posible extraer con precisión la información clave de los tickets: desde los productos comprados hasta sus cantidades, precios, fechas y patrones de compra. Además, se han podido explorar aspectos interesantes como las combinaciones de productos más frecuentes o el posible comportamiento estacional en la compra de ciertos alimentos, como los plátanos.
+
+Este trabajo no solo demuestra el valor del análisis de datos aplicado a la vida cotidiana, sino que también sienta las bases para posibles desarrollos futuros. Por ejemplo, se podrían integrar tickets de otros supermercados, analizar tendencias de precios a lo largo del tiempo o incluso construir recomendaciones personalizadas para consumidores.
+
+En resumen, este proyecto muestra cómo la tecnología y el análisis de datos pueden ayudar a entender mejor los hábitos de consumo, ofrecer información útil para la toma de decisiones y fomentar una gestión más inteligente del gasto doméstico.
+
