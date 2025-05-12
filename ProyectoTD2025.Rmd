@@ -403,9 +403,100 @@ Como se observa en la Tabla \@ref(fig:figura-semanas), Si tuvieses que cerrar un
 
 10. En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)
 
+```{r}
+#Filtramos solo las líneas que contengan productos por unidades
+
+#Como queremos hacer algo parecido a lo que hemos hecho en la primera pregunta podemos utilizar ese código     otra vez
+
+df_unidades <- df_lineas %>% filter(str_detect(texto, "^\\d+\\s")) %>% separate(texto, into = c("unidades", "descripcion" ,"p.unidad", "importe"), sep = " {2,}") %>% #Separamos en unidades, descripción
+  filter(descripcion != "DONACIÓN") %>% #Filtramos para que las donaciones no cuenten
+  select(unidades, descripcion)%>%
+  arrange(desc(unidades)) #Ordenamos las unidades de mayor a menor
+
+#Mostramos el producto que más se compra junto
+head(df_unidades, 1)
+```
+
 11. ¿Cuáles son las combinaciones de productos más frecuentes (dos productos que se compren juntos)?
 
-12. ¿Hay estacionalidad en ciertos productos (produtos que se compran más en cierta fecha del año)?
+```{r}
+
+#Identificar bloques de productos dentro de cada archivo
+
+df_frecuencia <- df_lineas %>% filter(str_detect(texto, "^\\d+\\s")) %>% separate(texto, into = c("unidades", "descripcion" ,"p.unidad", "importe"), sep = " {2,}") %>% #Separamos en unidades, descripción, precio de unidad y importe
+  filter(descripcion != "DONACIÓN") %>% #Filtramos para que las donaciones no cuenten
+  select(archivo, descripcion) %>% group_by(archivo) %>% filter(n() > 1) #Filtramos para que los archivos con un producto no cuenten
+  
+
+#Crear pares de productos por ticket
+pares_productos <- df_frecuencia %>%
+  group_by(archivo) %>%
+  summarise(pares = list(combn(descripcion, 2, simplify = FALSE)), .groups = "drop") %>%
+  unnest(pares) %>%
+  mutate(pares = map(pares, sort)) %>%
+  transmute(prod1 = map_chr(pares, 1),
+            prod2 = map_chr(pares, 2))
+
+pares_productos <- pares_productos %>% unite(col = "productos", sep = " ") #Se juntan para que al contar cuente las combinaciones de los dos productos
+
+pares_frecuentes <- pares_productos %>% count(productos, sort = T)
+```
+
+12. ¿Hay estacionalidad en plátanos? (se compran más en cierta fecha del año)
+
+```{r figura-platano, fig.cap="Cantidad de plátanos comprados por mes"}
+#Ya tenemos un df con las fechas, ahora creamos otro con todos los tickets que tienen plátanos.
+platanos <- df_lineas %>% filter(str_detect(tolower(texto), "platano"))
+
+#Vamos a ver cuantos kilos se compran de platanos en cada fecha, así que vamos a guardar en un vector las líneas de los archivos que contienen plátanos.
+archivo_platanos <- platanos %>% select(archivo) #filtramos los nombres
+archivo_platanos <- as.vector(archivo_platanos$archivo) #Convertir a vector
+
+#Con el vector de los archivos creamos un df de las fechas en las que se comparon plátanos
+df_fechas_platanos <- df_lineas %>% filter(linea == "5") %>% right_join(data.frame(archivo = archivo_platanos), by = "archivo")
+
+#Filtramos para quedarnos solo con las fechas en formato texto
+df_fechas_platanos <- df_fechas_platanos %>%  mutate(fecha = str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b")) %>% select(-texto)
+
+#Guardamos la fecha en el df de platanos
+platanos$fecha <- df_fechas_platanos$fecha
+platanos$fecha <- as.Date(platanos$fecha, format = "%d/%m/%Y") #Convertimos en formato fecha
+
+#Filtramos para hallar los kilos de plátanos en cada compra
+vector_platanos <- which(str_detect(tolower(df_lineas$texto), "platano")) #Crea un vector con las filas en las que aparecen los plátanos
+
+#Encontramos la linea donde aparece la cantidad de plátanos (en kg) comprada
+filas_kilos_platanos <- vector_platanos + 1
+
+#Añadimos las líneas de los kilos al df
+platanos$info <- df_lineas %>% slice(filas_kilos_platanos)%>%pull(texto)
+
+#Arreglamos el df para quedarnos con lo que necesitamos
+platanos_limpio <- platanos %>% extract(texto, into = c("unidades", "producto"), 
+                                        regex = "^[ ]*([0-9]+)[ ]+([A-Z]+)$") %>% #Opcional que empiecen con espacio, seleccionamos uno o más números del 0 al 9 que haya uno o más espacios y que acabe con uno o más caracteres de la A a la Z para seaparar en dos columnas: unidades y producto
+
+  extract(info, into = c("cantidad", "precio(kg)", "precio(total)"), 
+          regex = " {1,}([0-9,]+ kg)[ ]+([0-9,]+ €/kg)[ ]+([0-9,]+)$") %>% #Que empiece con uno o más espacios, que contenga uno o más números del 0 al 9 separados por una "," " " kg que haya uno o más espacios contenga contenga uno o más números del 0 al 9 separados por una "," " " €/kg y que acabe con uno o más números del 0 al 9 separados por una "," para separarlo en 3 columnas: cantidad, precio(kg), precio(total)
+
+  select(producto, fecha, cantidad) %>% #Seleccionamos lo que nos interesa
+  
+  mutate(cantidad = str_replace(cantidad, " kg", "")) %>% #Eliminamos kg
+  
+  mutate(cantidad = str_replace(cantidad, ",", ".")) %>% #Cambiamos "," por "." para convertirlo después a numérico
+  
+  mutate(cantidad = as.numeric(cantidad)) #Convertimos a numerico
+
+#Separamos fechas en mes y año para agrupar y obtener las cantidades totales por mes y año
+platanos_limpio <- platanos_limpio %>% mutate(fecha = as.character(fecha)) %>% separate(fecha, into = c("anyo", "mes", "dia"), sep = "-") %>% unite(col = "anyo-mes", c(anyo,mes), sep = "-") %>% select(`anyo-mes`, cantidad) %>% group_by(`anyo-mes`) %>% summarize(cantidad_total = sum(cantidad)) %>% arrange(`anyo-mes`)
+
+#Graficamos
+grafico_platanos <- platanos_limpio %>% ggplot(aes(x = `anyo-mes`, y = cantidad_total)) + geom_point(aes(color = `anyo-mes`)) + labs(title = "Kg de plátanos comprados por cada mes y año")
+grafico_platanos
+
+```
+
+Como se puede comprobar en la gráfica \@ref(fig:figura-platano) se compran más platanos en los meses de enero, 
+febrero y marzo, por tanto, los plátanos tienen estacionalidad.
 
 13. ¿Cuántos productos se compran por ticket, en promedio?
 
@@ -627,5 +718,6 @@ Hemos presentado:
     -   Tabla \@ref(tab:tabla-TiposIVA): Dinero que ha recaudado el IVA del 5%, 10% y 21%.
 2.  Figuras:
     -   Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
-    -   Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana
+    -   Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana.
     -   Figura \@ref(fig:figura-Frecuenciahoras): Horas de mayor y menor afluencia en el supermercado.
+    -   Figura \@ref(fig:figura-platano): Cantidad de plátanos comprados por mes.
