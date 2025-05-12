@@ -497,6 +497,31 @@ ggplot(df_platanos_precio, aes(x = fecha, y = precio_kg)) +
 
 9.  ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
 
+```{r}
+# Filtrar líneas que comienzan con un número (cantidad)
+df_productos <- df_lineas %>% 
+  filter(str_detect(texto, "^\\d+\\s")) %>%
+  
+# Extraer partes específicas de cada línea (con str_match): cantidad, nombre del producto, y precio
+mutate(matches = str_match(texto, "^(\\d+)\\s+(.*?)\\s+(\\d+,\\d{2})\\s+(\\d+,\\d{2})?$"),
+    
+# Crear columnas a partir de los grupos extraídos
+cantidad = as.numeric(matches[, 2]),
+producto = str_trim(matches[, 3])) %>%
+filter(!is.na(cantidad), !is.na(producto))
+
+# Agrupar y sumar las cantidades por producto (unidades vendidas por producto)
+productos_menos_vendidos <- df_productos %>%
+  group_by(producto) %>%
+  summarise(unidades_vendidas = sum(cantidad), .groups = "drop") %>%
+  
+# Ordenar y obtener el top de productos menos vendidos
+arrange(unidades_vendidas) %>% slice_head(n = 1000)
+
+# Mostrar el resultado
+productos_menos_vendidos
+```
+
 10. En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)
 
 Buscamos identificar cuál es el producto que más se compra por unidades en los tickets disponibles. Para ello, primero se filtran aquellas líneas del conjunto de datos (df_lineas) que comienzan con un número seguido de un espacio.
