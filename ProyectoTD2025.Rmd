@@ -549,7 +549,7 @@ df_IVA<-df_lineas %>%
 ```
 Ya hemos creado el dataframe que contiene toda la información del IVA proporcionada en los tickets. Ahora a partir de este agruparemos todas las líneas por porcentaje de IVA y sumaremos todas las cuotas asociadas a los tipos de IVA. Una vez lo tengamos utilizaremos la función filter() para así centrarnos únicamente en los tres tipos de IVA que queremos analizar, que son IVA del 5%, 10% y 21%.
 
-```{r tabla-TiposIVA}
+```{r figura-TiposIVA}
 
 total_TipoIVA <- df_IVA %>%
   #Agrupamos juntas todas las filas con el mismo porcentaje de IVA.
@@ -568,8 +568,19 @@ IVA_filtrado <- total_TipoIVA %>%
 
 #Mostramos el resultado mediante una tabla.
 kable(IVA_filtrado, caption = "Total de IVA por tipo de porcentaje")
+
+#Podemos representarlo en un gráfico de barras para mostrar la gran diferencia entre el dinero recogido según el tipo de IVA.
+ggplot(IVA_filtrado, aes(x = factor(porcentaje), y = Cuota)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(
+    title = "Total de IVA recaudado por tipo de porcentaje",
+    x = "Porcentaje de IVA",
+    y = "Total en €"
+  ) +
+  theme_minimal()
+
 ```
-La tabla revela que la mayor recaudación por IVA, con un total de 666.01€, corresponde a los productos gravados al 10%. En cambio, los productos con un IVA del 21% generaron una recaudación de 256.74€, mientras que aquellos con un IVA del 5% aportaron 8.21€.
+La tabla y el gráfico revelan que la mayor recaudación por IVA, con un total de 666.01€, corresponde a los productos gravados al 10%. En cambio, los productos con un IVA del 21% generaron una recaudación de 256.74€, mientras que aquellos con un IVA del 5% aportaron 8.21€.
 
 Por último, queremos verificar si se han tenido en cuenta todos los tickets y que no se haya perdido ningún dato en el proceso de extracción del IVA. Podemos comparar el número total de tickets únicos en el dataframe original (df_lineas) con el número de tickets para los cuales se pudo extraer distinta información del IVA en el dataframe lineas_IVA.
 
@@ -715,9 +726,9 @@ Hemos presentado:
 
 1.  Tablas:
     -   Tabla \@ref(tab:tabla-procedencia): Datos de procedencia de los tickets
-    -   Tabla \@ref(tab:tabla-TiposIVA): Dinero que ha recaudado el IVA del 5%, 10% y 21%.
 2.  Figuras:
     -   Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
     -   Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana.
+    -   Figura \@ref(fig_figura-TiposIVA): Muestra el dinero total recogido según el tipo de IVA.
     -   Figura \@ref(fig:figura-Frecuenciahoras): Horas de mayor y menor afluencia en el supermercado.
     -   Figura \@ref(fig:figura-platano): Cantidad de plátanos comprados por mes.
