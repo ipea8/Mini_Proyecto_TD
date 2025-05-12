@@ -717,6 +717,19 @@ totales_por_metodo <- resumen_tickets %>%
 
 # Mostramos e el total gastado por método de pago
 kable(totales_por_metodo, caption = "Importe total de cada método de pago")
+
+#Realizamos un histograma para mostrar así la distribución de los importes según el método de pago
+ggplot(resumen_tickets %>% filter(Metodo_Pago %in% c("Tarjeta", "Efectivo")), 
+       aes(x = Importe_Total, fill = Metodo_Pago)) +
+  geom_histogram(binwidth = 5, alpha = 0.6, position = "identity", color = "white") +
+  labs(
+    title = "Distribución del importe total por método de pago",
+    x = "Importe total del ticket (€)",
+    y = "Cantidad de tickets",
+    fill = "Método de pago"
+  ) +
+  scale_fill_manual(values = c("Efectivo" = "orange", "Tarjeta" = "lightblue")) +
+  theme_minimal()
 ```
 Como se puede observar cada ticket ha coincidido en el método de pago, todos han sido pagados con tarjeta. También vemos que el importe total de todos los tickets es 13.649,8€. 
 
