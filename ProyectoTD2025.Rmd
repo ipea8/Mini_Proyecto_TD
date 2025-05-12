@@ -549,7 +549,7 @@ df_IVA<-df_lineas %>%
 ```
 Ya hemos creado el dataframe que contiene toda la información del IVA proporcionada en los tickets. Ahora a partir de este agruparemos todas las líneas por porcentaje de IVA y sumaremos todas las cuotas asociadas a los tipos de IVA. Una vez lo tengamos utilizaremos la función filter() para así centrarnos únicamente en los tres tipos de IVA que queremos analizar, que son IVA del 5%, 10% y 21%.
 
-```{r figura-TiposIVA}
+```{r tabla-TiposIVA}
 
 total_TipoIVA <- df_IVA %>%
   #Agrupamos juntas todas las filas con el mismo porcentaje de IVA.
@@ -569,6 +569,8 @@ IVA_filtrado <- total_TipoIVA %>%
 #Mostramos el resultado mediante una tabla.
 kable(IVA_filtrado, caption = "Total de IVA por tipo de porcentaje")
 
+```
+```{r figura-TiposIVA)
 #Podemos representarlo en un gráfico de barras para mostrar la gran diferencia entre el dinero recogido según el tipo de IVA.
 ggplot(IVA_filtrado, aes(x = factor(porcentaje), y = Cuota)) +
   geom_bar(stat = "identity", fill = "steelblue") +
@@ -706,7 +708,7 @@ resumen_tickets <- df_lineas %>%
 ```
 Tenemos ya el dataframe resumen_tickets que contiene solo las líneas de texto que mencionan el método de pago. A partir de este dataframe calcularemos el importe total de cada método de pago. 
 
-```{r}
+```{r tabla-ImporteTotal}
 #Agrupamos por método de pago para ver cuánto se ha gastado con cada uno
 totales_por_metodo <- resumen_tickets %>%
   group_by(Metodo_Pago) %>%
@@ -717,7 +719,8 @@ totales_por_metodo <- resumen_tickets %>%
 
 # Mostramos e el total gastado por método de pago
 kable(totales_por_metodo, caption = "Importe total de cada método de pago")
-
+```
+```{r figura-MetodoPago}
 #Realizamos un histograma para mostrar así la distribución de los importes según el método de pago
 ggplot(resumen_tickets %>% filter(Metodo_Pago %in% c("Tarjeta", "Efectivo")), 
        aes(x = Importe_Total, fill = Metodo_Pago)) +
@@ -739,9 +742,13 @@ Hemos presentado:
 
 1.  Tablas:
     -   Tabla \@ref(tab:tabla-procedencia): Datos de procedencia de los tickets
+    -   Tabla \@ref(tab:tabla-ImporteTotal): Muestra el dinero total pagado con tarjeta
+    -   Tabla \@ref(tab:tabla-TiposIVA): Muestra el dinero total recogido según el tipo de IVA.
+
 2.  Figuras:
     -   Figura \@ref(fig:figura-bananas_platanos): Evolución de precio por kilo de las bananas y los plátanos
     -   Figura \@ref(fig:figura-semanas): Tickets recogidos cada día de las semana.
     -   Figura \@ref(fig_figura-TiposIVA): Muestra el dinero total recogido según el tipo de IVA.
     -   Figura \@ref(fig:figura-Frecuenciahoras): Horas de mayor y menor afluencia en el supermercado.
     -   Figura \@ref(fig:figura-platano): Cantidad de plátanos comprados por mes.
+    -   Figura \ref(fig:figura-MetodoPago): Distribución del importe de los tickets según el método de pago.
