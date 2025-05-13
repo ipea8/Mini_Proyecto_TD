@@ -860,10 +860,7 @@ ggplot(df_productos, aes(x = num_productos)) +
        y = "Frecuencia") +
   theme_minimal()
 ```
-<<<<<<< HEAD
 
-=======
->>>>>>> 9c5e5b4fe955ad98a31c8684284aef36c0decaeb
 14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
 
 15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
