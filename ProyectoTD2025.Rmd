@@ -71,7 +71,7 @@ Por cada archivo, se construye un pequeño data frame con tres columnas: archivo
 
 Luego, todos estos pequeños data frames se combinan en uno solo, formando el objeto df_lineas, que contiene todas las líneas de todos los tickets.
 
-Por último, se muestra una tabla con las primeras 52 líneas de este data frame (el primer ticket del data frame)  para visualizar cómo se ve el contenido de los tickets ya estructurado. Esta visualización permite confirmar que la lectura fue correcta y que los datos están listos para su análisis.
+Por último, se muestra una tabla con las primeras 52 líneas de este data frame (el primer ticket del data frame) para visualizar cómo se ve el contenido de los tickets ya estructurado. Esta visualización permite confirmar que la lectura fue correcta y que los datos están listos para su análisis.
 
 Ahora mostramos el código en el que se muestra todo lo que hemos explicado antes.
 
@@ -142,7 +142,6 @@ knitr::kable(head(top_5_productos),
 ```
 
 Como podemos observar en la tabla \@ref:tabla-productosvendidos, los cinco productos más vendidos por unidades son: leche desnatada con calcio (22 unidades), barra campesina(12 unidades), chapata cristal(12 unidades), garbanzo m.cocido (12 unidades) y leche desnatada sin lactosa (12 unidades).
-
 
 2.  Si consideramos la categoría de FRUTAS Y VERDURAS. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
 
@@ -221,8 +220,7 @@ knitr::kable(head(top_5_frutas_verduras),
 # Los cinco productos mas vendidos de frutas y verduras son naranja	con 82.062Kg, patata con	74.800Kg, mandarina	con 31.186Kg, cebolla con	22.000Kg y pepino	con 19.624Kg.
 ```
 
-Como podemos observar en la tabla \@ref:tabla-frutasverduras, los cinco productos más vendidos dentro de la categoría de frutas y verduras son: naranja	con 82.062Kg, patata con	74.800Kg, mandarina	con 31.186Kg, cebolla con	22.000Kg y pepino	con 19.624Kg.
-
+Como podemos observar en la tabla \@ref:tabla-frutasverduras, los cinco productos más vendidos dentro de la categoría de frutas y verduras son: naranja con 82.062Kg, patata con 74.800Kg, mandarina con 31.186Kg, cebolla con 22.000Kg y pepino con 19.624Kg.
 
 3.  Si consideramos la categoría de PESCADO. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
 
@@ -300,8 +298,7 @@ knitr::kable(head(top_5_pescado),
 # Los cinco productos de pescado más vendidos son bacaladilla con 7,372Kg, rodaballo con	3.672Kg, sepia lonja con 3.584Kg, dorada con	2.934Kg y sepia fresca con	2.642Kg.
 ```
 
-Como podemos observar en la tabla \@ref:tabla-pescado, los cinco productos de la categoría pescado más vendidos por kilos son:bacaladilla con 7,4Kg, rodaballo con	3.672Kg, sepia lonja con 3.584Kg, dorada con	2.934Kg y sepia fresca con	2.642Kg.
-
+Como podemos observar en la tabla \@ref:tabla-pescado, los cinco productos de la categoría pescado más vendidos por kilos son:bacaladilla con 7,4Kg, rodaballo con 3.672Kg, sepia lonja con 3.584Kg, dorada con 2.934Kg y sepia fresca con 2.642Kg.
 
 4.  Muestra mediante un gráfico de líneas como ha variado el precio por kilo de las bananas y los plátanos en los tickets disponibles, a lo largo del tiempo.
 
@@ -388,8 +385,7 @@ Primero, se filtran las líneas correspondientes a la fecha del ticket, que se e
 
 A continuación, se genera un recuento de tickets por día de la semana, lo que nos da la frecuencia de tickets para cada día. Este recuento se convierte en un data.frame y se ordenan los días de la semana manualmente para asegurar que el gráfico muestre los días en el orden lógico (de lunes a domingo).
 
-Finalmente, se construye un gráfico de barras que muestra claramente cuántos tickets se han generado en cada día. Esto permite visualizar qué días son más activos y cuáles menos, ayudando a responder la pregunta de negocio:
-¿Qué día sería el más adecuado para cerrar?
+Finalmente, se construye un gráfico de barras que muestra claramente cuántos tickets se han generado en cada día. Esto permite visualizar qué días son más activos y cuáles menos, ayudando a responder la pregunta de negocio: ¿Qué día sería el más adecuado para cerrar?
 
 El día con menos tickets generados sería, en principio, el más adecuado para cerrar, ya que implicaría un menor impacto económico.
 
@@ -421,157 +417,206 @@ Como se observa en la figura \@ref:figura-semanas, si se tuviese que cerrar un d
 
 7.  ¿Cuál es la media de ventas para cada día de la semana?
 
-Este código tiene como objetivo procesar y analizar tickets de compra en formato PDF. Primero, extrae la fecha de cada ticket y la convierte en un formato de fecha legible por R. Luego, identifica dónde comienzan los productos dentro del ticket para separar esa sección del resto del contenido. A partir de ahí, filtra solo las líneas que corresponden a productos realmente comprados.
-
-Después, cuenta cuántos productos hay por ticket y asocia esta cantidad con su respectiva fecha. También se añade el día de la semana en que se hizo la compra. Finalmente, se agrupan los tickets por día de la semana y se calcula la media de productos comprados por día, ordenando los días de forma cronológica para facilitar el análisis de patrones de consumo.
+Se calcula la media de productos vendidos por ticket según el día de la semana. Para ello, se extrae la fecha desde el nombre del archivo y se identifican las líneas que representan productos reales. Luego, se cuenta cuántos productos hay por ticket y se asocia cada uno a su día de la semana. Finalmente, se calcula la media de productos por día, ordenando los días de lunes a domingo.
 
 ```{r tabla-medias}
-# 1. Obtener líneas con fechas
-    df_fechas <- df_lineas %>%
-      filter(str_detect(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b")) %>%
-      mutate(
-        fecha = as.Date(str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b"), format = "%d/%m/%Y")
-      ) %>%
-      select(archivo, fecha)
+library(dplyr)
+library(stringr)
+library(lubridate)
 
-# 2. Identificar líneas que contienen la cabecera de productos
-    df_cabeceras <- df_lineas %>%
-      filter(str_detect(texto, regex("Descripción.*P\\. Unit.*Importe", ignore_case = TRUE))) %>%
-      select(archivo, linea) %>%
-      rename(linea_inicio = linea)
-    
-# 3. Unir cabeceras con la siguiente línea de cada archivo para marcar el inicio de productos
-    df_cabeceras <- df_cabeceras %>%
-      mutate(linea_inicio = as.integer(linea_inicio))
-    
-# 4. Añadir columna para marcar si una línea es un producto (posterior a la cabecera pero antes del TOTAL o siguiente ticket)
-    df_lineas_productos <- df_lineas %>%
-      left_join(df_cabeceras, by = "archivo") %>%
-      group_by(archivo) %>%
-      mutate(es_producto = linea > linea_inicio & !str_detect(texto, regex("TOTAL|IVA|TARJETA|FACTURA|ENTRADA|SALIDA|€", ignore_case = TRUE))) %>%
-      ungroup()
+# 1. Extraer la fecha desde el nombre del archivo (formato YYYYMMDD)
+df_fechas <- df_lineas %>%
+  mutate(
+    fecha = str_extract(archivo, "\\d{8}"),
+    fecha = as.Date(fecha, format = "%Y%m%d")
+  ) %>%
+  distinct(archivo, .keep_all = TRUE) %>%
+  select(archivo, fecha)
 
-# 5. Filtrar solo las líneas de productos
-    df_productos <- df_lineas_productos %>%
-      filter(es_producto)
+# 2. Contar líneas que representan productos reales (entre línea 12 y "TOTAL"/"PARKING" y que empiecen por entero)
+df_productos <- df_lineas %>%
+  group_by(archivo) %>%
+  mutate(
+    # Detectar la primera línea con "TOTAL" o "PARKING"
+    linea_fin = min(
+      c(
+        linea[str_detect(texto, regex("TOTAL", ignore_case = TRUE))],
+        linea[str_detect(texto, regex("PARKING", ignore_case = TRUE))]
+      ),
+      na.rm = TRUE
+    ),
+    linea_fin = ifelse(is.infinite(linea_fin), max(linea), linea_fin),
 
-# 6. Contar número de productos por archivo
-    conteo_productos <- df_productos %>%
-      group_by(archivo) %>%
-      summarise(num_productos = n())
+    # Marcar si es línea de producto real
+    es_producto = linea >= 12 &
+                  linea < linea_fin &
+                  str_detect(str_trim(texto), "^\\d+\\s")
+  ) %>%
+  summarise(num_productos = sum(es_producto), .groups = "drop")
 
-# 7. Unir con fechas
-    df_final <- left_join(conteo_productos, df_fechas, by = "archivo") %>%
-      mutate(dia_semana = str_to_lower(weekdays(fecha)))
+# 3. Unir con fechas y agregar día de la semana
+df_final <- df_productos %>%
+  left_join(df_fechas, by = "archivo") %>%
+  mutate(dia_semana = str_to_lower(weekdays(fecha)))
 
-#  8. Calcular media de productos comprados por día de la semana
-    media_productos_dia <- df_final %>%
-      group_by(dia_semana) %>%
-      summarise(media_productos = mean(num_productos)) %>%
-      arrange(factor(dia_semana, levels = c("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")))
+# 4. Calcular media de productos por día de la semana
+media_por_dia <- df_final %>%
+  group_by(dia_semana) %>%
+  summarise(media_productos = mean(num_productos), .groups = "drop") %>%
+  arrange(factor(dia_semana, levels = c("lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo")))
 
-# Visualizar el resultado
-    knitr::kable(media_productos_dia,
-                 caption = "Media de compras de productos (por unidades) cada día de la semana",
-                 booktabs = TRUE)
+# 5. Mostrar resultado
+print(media_por_dia)
+
 ```
 
-Finalmente, en la tabla \@ref:tabla-medias podemos ver el resultado: la media de productos los lunes es de 34, la de los martes es de 30, la de los miércoles es de 32, la de los jueves es de 27, la de los viernes es de 32, la de los sábados es de 36 y la de los domingos es de 30. Podemos observar que, de normal, el dia que menos productos se venden es el jueves.
+Finalmente, en la tabla \@ref:tabla-medias podemos ver el resultado: la media de productos los lunes es de 17, la de los martes es de 14, la de los miércoles es de 16, la de los jueves es de 11, la de los viernes es de 16, la de los sábados es de 19 y la de los domingos es de 30. Podemos observar que, de normal, el dia que menos productos se venden es el jueves.
 
 8.  ¿Cómo ha evolucionado el precio por unidad o por kilo de un producto específico a lo largo del tiempo? Hacer el gráfico de cómo varía el precio de un producto a lo largo del tiempo.
 
-Esta pregunta analiza cómo ha cambiado el precio por kilo de las manzanas a lo largo del tiempo usando los tickets de Mercadona en PDF. Primero, se filtran las líneas de los tickets que contienen la palabra "manzana" y se extraen los nombres de los archivos donde aparecen. Luego, se obtienen las fechas asociadas a esos tickets (suponiendo que la fecha está en la línea 5) y se añaden al dataframe.
-
-Después, se localiza la línea siguiente a la palabra "manzana", que normalmente contiene información sobre el peso y precio. De ahí se extrae el precio por kilo, convirtiéndolo en formato numérico. Con las fechas y precios ya preparados, se construye un dataframe con estas dos variables y se genera un gráfico de líneas que muestra cómo ha variado el precio de las manzanas por kilo a lo largo del tiempo. Esto permite detectar tendencias y cambios en los precios de ese producto.
+Se analiza cómo ha evolucionado el precio por kilo de cada producto con unidad €/kg a lo largo del tiempo. Para ello, se extrae el precio de cada línea del ticket y se asocia al nombre del producto de la línea anterior. Luego, se limpia y agrupa esta información por producto. Finalmente, se genera un gráfico por producto mostrando su precio en función del tiempo.
 
 ```{r figura-evolucion_precio_manzanas, fig.cap="Evolución del precio por kg de manzana"}
-#Ya tenemos un df con las fechas, ahora creamos otro con todos los tickets que tienen plátanos.
-manzanas <- df_lineas %>% filter(str_detect(tolower(texto), "manzana"))
+{r}
+library(dplyr)
+library(stringr)
+library(lubridate)
+library(ggplot2)
 
-#Vamos a ver cuantos kilos se compran de platanos en cada fecha, así que vamos a guardar en un vector las líneas de los archivos que contienen plátanos.
-archivo_manzanas <- manzanas %>% select(archivo) #filtramos los nombres
-archivo_manzanas <- as.vector(archivo_manzanas$archivo) #Convertir a vector
+# 1. Asegurar tipos y limpiar símbolos raros
+df_lineas <- df_lineas %>%
+  mutate(
+    linea = as.integer(linea),
+    texto = str_replace_all(texto, "Ôé¼", "€"),
+    fecha = as.Date(str_extract(archivo, "\\d{8}"), format = "%Y%m%d")
+  )
 
-#Con el vector de los archivos creamos un df de las fechas en las que se comparon plátanos
-df_fechas_manzanas <- df_lineas %>% filter(linea == "5") %>% right_join(data.frame(archivo = archivo_manzanas), by = "archivo")
+# 2. Filtrar solo las líneas que contienen '€/kg' y extraer precio
+df_pesados <- df_lineas %>%
+  filter(str_detect(texto, "€/kg")) %>%
+  mutate(
+    precio_kg = as.numeric(
+      str_replace(
+        str_extract(texto, "\\d+[.,]\\d{2}(?=\\s*€/kg)"),
+        ",", "."
+      )
+    )
+  ) %>%
+  select(archivo, fecha, linea, texto, precio_kg)
 
-#Filtramos para quedarnos solo con las fechas en formato texto
-df_fechas_manzanas <- df_fechas_manzanas %>%  mutate(fecha = str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b")) %>% select(-texto)
+# 3. Añadir columna 'producto' desde línea anterior y normalizar
+df_pesados <- df_pesados %>%
+  mutate(linea_anterior = linea - 1) %>%
+  left_join(
+    df_lineas %>%
+      select(archivo, linea, texto) %>%
+      rename(texto_producto = texto),
+    by = c("archivo", "linea_anterior" = "linea")
+  ) %>%
+  mutate(
+    producto = texto_producto %>%
+      str_replace("^\\d+\\s+", "") %>%
+      str_replace_all("[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\\s]", "") %>%
+      str_squish() %>%
+      str_to_upper()
+  ) %>%
+  select(archivo, fecha, linea, texto, precio_kg, producto)
 
-#Guardamos la fecha en el df de platanos
-manzanas$fecha <- df_fechas_manzanas$fecha
-manzanas$fecha <- as.Date(manzanas$fecha, format = "%d/%m/%Y") #Convertimos en formato fecha
+# 4. Obtener productos únicos
+productos_unicos <- df_pesados %>%
+  filter(!is.na(producto), producto != "") %>%
+  distinct(producto) %>%
+  pull(producto)
 
-#Filtramos para hallar los kilos de plátanos en cada compra
-vector_manzanas <- which(str_detect(tolower(df_lineas$texto), "manzana")) #Crea un vector con las filas en las que aparecen los plátanos
+# 5. Crear lista de data.frames por producto
+df_por_producto <- lapply(productos_unicos, function(nombre) {
+  df_pesados %>%
+    filter(producto == nombre) %>%
+    arrange(fecha)
+})
+names(df_por_producto) <- productos_unicos
 
-#Encontramos la linea donde aparece la cantidad de plátanos (en kg) comprada
-filas_kilos_manzanas <- vector_manzanas + 1
+# 6. Mostrar todos los gráficos en pantalla, evitando warnings si hay solo una observación
+for (nombre in productos_unicos) {
+  df_producto <- df_por_producto[[nombre]]
+  
+  p <- ggplot(df_producto, aes(x = fecha, y = precio_kg)) +
+    {
+      if (nrow(df_producto) > 1) geom_line(color = "steelblue", linewidth = 1) else NULL
+    } +
+    geom_point(color = "darkred", size = 2) +
+    labs(
+      title = paste("Evolución del precio por kilo:", nombre),
+      x = "Fecha",
+      y = "€/kg"
+    ) +
+    theme_minimal()
+  
+  print(p)
+}
 
-#Añadimos las líneas de los kilos al df
-manzanas$info <- df_lineas %>% slice(filas_kilos_manzanas)%>%pull(texto)
-
-# Verificar la estructura del dataframe 'platanos'
-str(manzanas)
-
-# Extraer el precio por kg de la columna 'info'
-manzanas$precio_kg <- as.numeric(gsub(",", ".", str_extract(manzanas$info, "\\d{1,2}[.,]?\\d{2}"))) 
-# Reemplazar coma por punto
-
-# Convertir las fechas a formato Date
-manzanas$fecha <- as.Date(manzanas$fecha, format = "%Y-%m-%d")
-
-# Crear un nuevo dataframe con fecha y precio por kg
-df_manzanas_precio <- manzanas %>%
-  select(fecha, precio_kg)
-
-# Verificar las primeras filas del dataframe creado
-head(df_manzanas_precio)
-
-# Graficar la evolución del precio por kilo a lo largo del tiempo
-ggplot(df_manzanas_precio, aes(x = fecha, y = precio_kg)) +
-  geom_line() +
-  labs(title = "Evolución del precio de las manzanas por kg",
-       x = "Fecha", y = "Precio por kg (€)") +
-  theme_minimal()
 ```
 
 Como podemos ver en el gráfico \@ref:figura-evolucion_precio_manzanas, el precio por kilo tiene picos de subida en la primera mitad del año 2024 y luego baja mucho y se mantiene constante.
 
 9.  ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
 
-Esta pregunta busca identificar los productos menos vendidos entre los tickets disponibles. Para ello, se filtran las líneas que representan productos (aquellas que empiezan por un número, indicando la cantidad comprada). Luego, se extraen la cantidad y el nombre del producto mediante expresiones regulares.
+    ¿Cuáles son los productos mas vendidos en el conjunto de tickets disponibles?
 
-Después, se agrupan los datos por producto y se suma la cantidad total vendida de cada uno. Finalmente, se ordenan de menor a mayor según las unidades vendidas y se seleccionan los productos con menor frecuencia de compra. Así se obtiene un listado de los productos menos comprados en el conjunto de tickets analizados.
+    Se analizan los tickets para identificar los productos no vendidos al peso, filtrando aquellos que no contienen "€/kg" y comienzan por una cantidad. Luego, se limpian y estandarizan los nombres de los productos para evitar duplicados. A continuación, se cuentan las apariciones de cada producto. Finalmente, se muestran los 10 más vendidos y los 10 menos vendidos.
 
 ```{r tabla-menosvendidos}
-# Filtrar líneas que comienzan con un número (cantidad)
-df_productos <- df_lineas %>% 
-  filter(str_detect(texto, "^\\d+\\s")) %>%
-  
-# Extraer partes específicas de cada línea (con str_match): cantidad, nombre del producto, y precio
-mutate(matches = str_match(texto, "^(\\d+)\\s+(.*?)\\s+(\\d+,\\d{2})\\s+(\\d+,\\d{2})?$"),
-    
-# Crear columnas a partir de los grupos extraídos
-cantidad = as.numeric(matches[, 2]),
-producto = str_trim(matches[, 3])) %>%
-filter(!is.na(cantidad), !is.na(producto))
+# 1. Identificar productos no pesados (sin €/kg y que comienzan por un número)
+df_no_peso <- df_lineas %>%
+  mutate(
+    linea = as.integer(linea),
+    texto = str_replace_all(texto, "Ôé¼", "€"),
+    fecha = as.Date(str_extract(archivo, "\\d{8}"), format = "%Y%m%d")
+  ) %>%
+  group_by(archivo) %>%
+  mutate(
+    linea_total = min(linea[str_detect(texto, regex("TOTAL", ignore_case = TRUE))], na.rm = TRUE),
+    es_producto = linea >= 12 &
+                  linea < ifelse(is.infinite(linea_total), max(linea), linea_total) &
+                  str_detect(texto, "^\\d+\\s") &
+                  !str_detect(texto, "€/kg")
+  ) %>%
+  ungroup() %>%
+  filter(es_producto)
 
-# Agrupar y sumar las cantidades por producto (unidades vendidas por producto)
-productos_menos_vendidos <- df_productos %>%
-  group_by(producto) %>%
-  summarise(unidades_vendidas = sum(cantidad), .groups = "drop") %>%
-  
-# Ordenar y obtener el top de productos menos vendidos
-arrange(unidades_vendidas) %>% slice_head(n = 1000)
+# 2. Extraer y limpiar el nombre del producto
+df_no_peso <- df_no_peso %>%
+  mutate(
+    producto = texto %>%
+      str_replace("^\\d+\\s+", "") %>%                             # eliminar cantidad
+      str_replace_all("[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\\s]", "") %>%         # limpiar símbolos
+      str_squish() %>%
+      str_to_upper()
+  )
 
-# Mostrar el resultado
-knitr::kable(head(productos_menos_vendidos, 5),
-             caption = "Productos menos vendidos",
-             booktabs = TRUE)
+# 3. Contar productos y mostrar los menos vendidos
+productos_no_peso_menos_vendidos <- df_no_peso %>%
+  count(producto, sort = TRUE) %>%
+  filter(!is.na(producto), producto != "") %>%
+  arrange(n)  # ordenar de menor a mayor
+
+# 4. Mostrar los 10 menos vendidos
+head(productos_no_peso_menos_vendidos, 10)
+
+
+#los productos mas vendidos que no van por peso
+# Ordenar de mayor a menor frecuencia
+productos_no_peso_mas_vendidos <- df_no_peso %>%
+  count(producto, sort = TRUE) %>%
+  filter(!is.na(producto), producto != "") %>%
+  arrange(desc(n))  # mayor a menor
+
+# Mostrar los 10 más vendidos
+head(productos_no_peso_mas_vendidos, 10)
+
+
+
 ```
-
-Como podemos observar en la tabla \@ref:tabla-menosvendidos, de entre los productos menos vendidos se encuentra el agua mineral y las albondigas de bacalao con tan solo 2 unidades, empatados con muchos otros productos.
 
 10. En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)
 
@@ -603,7 +648,7 @@ Como podemos observar en la tabla \@ref:tabla-masunidades, el producto más comp
 
 El objetivo de esta pregunta es identificar qué pares de productos suelen comprarse juntos en un mismo ticket. Para comenzar, se filtran las líneas del dataset que contienen información sobre productos vendidos por unidad. Estas líneas se dividen en varias columnas como unidades, descripción del producto, precio por unidad e importe total. Se excluyen las líneas que hacen referencia a "DONACIÓN" para evitar sesgos en los datos. Luego, se seleccionan solo las columnas relevantes, en este caso el archivo (que identifica el ticket) y la descripción del producto. Posteriormente, se agrupan los datos por ticket y se eliminan aquellos que solo contienen un producto, ya que no pueden formar combinaciones.
 
-Una vez obtenidos los tickets con al menos dos productos, se generan todas las combinaciones posibles de dos productos dentro de cada ticket. Cada par se ordena alfabéticamente para evitar que el orden afecte el conteo. Luego, los pares se combinan en una sola cadena de texto para facilitar su conteo. Finalmente, calculamos cuántas veces aparece cada combinación en todos los tickets, ordenando los resultados de mayor a menor frecuencia. 
+Una vez obtenidos los tickets con al menos dos productos, se generan todas las combinaciones posibles de dos productos dentro de cada ticket. Cada par se ordena alfabéticamente para evitar que el orden afecte el conteo. Luego, los pares se combinan en una sola cadena de texto para facilitar su conteo. Finalmente, calculamos cuántas veces aparece cada combinación en todos los tickets, ordenando los resultados de mayor a menor frecuencia.
 
 ```{r tabla-combinaciones}
 
@@ -692,8 +737,7 @@ grafico_platanos
 
 ```
 
-Como se puede comprobar en la gráfica \@ref:figura-platanos se compran más platanos en los meses de enero, 
-febrero y marzo (es decir, en invierno), por tanto, los plátanos tienen estacionalidad.
+Como se puede comprobar en la gráfica \@ref:figura-platanos se compran más platanos en los meses de enero, febrero y marzo (es decir, en invierno), por tanto, los plátanos tienen estacionalidad.
 
 13. ¿Cuántos productos se compran por ticket, en promedio?
 
@@ -767,6 +811,7 @@ IVA_filtrado <- total_TipoIVA %>%
 #Mostramos el resultado mediante una tabla.
 kable(IVA_filtrado, caption = "Total de IVA por tipo de porcentaje")
 ```
+
 La tabla \@ref:tabla-TiposIVA revela que la mayor recaudación por IVA, con un total de 666.01€, corresponde a los productos gravados al 10%. En cambio, los productos con un IVA del 21% generaron una recaudación de 256.74€, mientras que aquellos con un IVA del 5% aportaron 8.21€.
 
 Por último, queremos verificar si se han tenido en cuenta todos los tickets y que no se haya perdido ningún dato en el proceso de extracción del IVA. Podemos comparar el número total de tickets únicos en el dataframe original (df_lineas) con el número de tickets para los cuales se pudo extraer distinta información del IVA en el dataframe lineas_IVA.
@@ -779,8 +824,8 @@ tickets_con_IVA <- length(unique(df_IVA$archivo))
 cat("Tickets totales:", total_tickets, "\n")
 cat("Tickets con IVA:", tickets_con_IVA, "\n")
 ```
-Como podemos ver, ambos números son iguales (total de tickets únicos y tickets con el IVA extraido), entonces no hay ningún dato perdido.
 
+Como podemos ver, ambos números son iguales (total de tickets únicos y tickets con el IVA extraido), entonces no hay ningún dato perdido.
 
 16. ¿A qué horas se suele ir más a comprar en los supermercados? ¿Cuáles son las que menos?
 
@@ -854,14 +899,14 @@ length(unique(df_lineas$archivo))
 #Ahora seleccionamos las columnas del nuevo dataframe donde se encuentra solo las horas de cada ticket.
 nrow(df_horas)
 ```
-Como podemos ver, ambos números son iguales (total de tickets únicos y tickets con hora extraída), entonces no hay ningún dato perdido.
 
+Como podemos ver, ambos números son iguales (total de tickets únicos y tickets con hora extraída), entonces no hay ningún dato perdido.
 
 17. ¿Qué método de pago es más frecuente en los tickets: tarjeta o efectivo? Muéstralo mediante un box plot ¿Cuánto se ha gastado en total con cada método de pago?
 
 Nos piden averiguar cual es el método de pago que más se repite: efectivo o tajeta.
 
-En este caso se repite el hecho de que la forma de pago puede encontrarse en diferentes líneas dentro del ticket, por eso vamos a aplicar la funcion str_detect() para ver si es Tarjeta o Efectivo. Además queremos calcular también el importe total de cada método de pago. 
+En este caso se repite el hecho de que la forma de pago puede encontrarse en diferentes líneas dentro del ticket, por eso vamos a aplicar la funcion str_detect() para ver si es Tarjeta o Efectivo. Además queremos calcular también el importe total de cada método de pago.
 
 ```{r}
 resumen_tickets <- df_lineas %>%
@@ -894,7 +939,7 @@ resumen_tickets <- df_lineas %>%
   filter(!is.na(Importe_Total))  
 ```
 
-Tenemos ya el dataframe resumen_tickets que contiene solo las líneas de texto que mencionan el método de pago. A partir de este dataframe calcularemos el importe total de cada método de pago. 
+Tenemos ya el dataframe resumen_tickets que contiene solo las líneas de texto que mencionan el método de pago. A partir de este dataframe calcularemos el importe total de cada método de pago.
 
 ```{r tabla-tipospago}
 #Agrupamos por método de pago para ver cuánto se ha gastado con cada uno
@@ -908,7 +953,8 @@ totales_por_metodo <- resumen_tickets %>%
 # Mostramos e el total gastado por método de pago
 kable(totales_por_metodo, caption = "Importe total de cada método de pago")
 ```
-Como se puede observar en la tabla \@ref:tabla-tipospago cada ticket ha coincidido en el método de pago, todos han sido pagados con tarjeta. También vemos que el importe total de todos los tickets es 13.649,8€. 
+
+Como se puede observar en la tabla \@ref:tabla-tipospago cada ticket ha coincidido en el método de pago, todos han sido pagados con tarjeta. También vemos que el importe total de todos los tickets es 13.649,8€.
 
 # Conclusión
 
@@ -924,4 +970,4 @@ En resumen, este proyecto muestra cómo la tecnología y el análisis de datos p
 
 ##Referncias a tablas:
 
-  -    
+-   
