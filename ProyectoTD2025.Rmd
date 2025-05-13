@@ -148,7 +148,7 @@ kable(productos_unidades, caption = "Top 5 productos vendidos por unidades")
 # $: fin de linea
 ```
 
-Como podemos observar en la tabla \@ref:tabla-productosvendidos, los cinco productos más vendidos por unidades son: leche desnatada con calcio (22 unidades), barra campesina(12 unidades), chapata cristal(12 unidades), garbanzo m.cocido (12 unidades) y leche desnatada sin lactosa (12 unidades).
+Como podemos observar en la tabla \@ref:tabla-productosvendidos, los cinco productos más vendidos por unidades son: leche desnatada con calcio (24 unidades), queso lonchas cabra (20 unidades), copos de avena (16 unidades) barra campesina(14 unidades), chapata cristal(12 unidades) y garbanzo m.cocido (14 unidades).
 
 2.  Si consideramos la categoría de FRUTAS Y VERDURAS. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
 
@@ -527,7 +527,7 @@ Finalmente, en la tabla \@ref:tabla-medias podemos ver el resultado: la media de
 Se analiza cómo ha evolucionado el precio por kilo de cada producto con unidad €/kg a lo largo del tiempo. Para ello, se extrae el precio de cada línea del ticket y se asocia al nombre del producto de la línea anterior. Luego, se limpia y agrupa esta información por producto. Finalmente, se genera un gráfico por producto mostrando su precio en función del tiempo.
 
 ```{r figura-evolucion_precio_manzanas, fig.cap="Evolución del precio por kg de manzana"}
-{r}
+
 library(dplyr)
 library(stringr)
 library(lubridate)
@@ -860,7 +860,10 @@ ggplot(df_productos, aes(x = num_productos)) +
        y = "Frecuencia") +
   theme_minimal()
 ```
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9c5e5b4fe955ad98a31c8684284aef36c0decaeb
 14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
 
 15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
