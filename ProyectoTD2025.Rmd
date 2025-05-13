@@ -887,6 +887,8 @@ ggplot(df_productos, aes(x = num_productos)) +
   theme_minimal()
 ```
 
+\newpage
+
 14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
 ```{r}
 # Paso 1:Calcular el importe medio por ticket y representar
@@ -935,6 +937,8 @@ ticket_mas_caro
 ticket_mas_barato <- resumen_tickets %>% slice_min(Importe_Total, n = 1)
 ticket_mas_barato
 ```
+
+\newpage
 
 15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
 
