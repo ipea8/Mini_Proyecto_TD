@@ -470,6 +470,10 @@ Finalmente, en esta tabla podemos ver el resultado: la media de productos los lu
 
 8.  ¿Cómo ha evolucionado el precio por unidad o por kilo de un producto específico a lo largo del tiempo? Hacer el gráfico de cómo varía el precio de un producto a lo largo del tiempo.
 
+Esta pregunta analiza cómo ha cambiado el precio por kilo de los plátanos a lo largo del tiempo usando los tickets de Mercadona en PDF. Primero, se filtran las líneas de los tickets que contienen la palabra "plátano" y se extraen los nombres de los archivos donde aparecen. Luego, se obtienen las fechas asociadas a esos tickets (suponiendo que la fecha está en la línea 5) y se añaden al dataframe.
+
+Después, se localiza la línea siguiente a la palabra "plátano", que normalmente contiene información sobre el peso y precio. De ahí se extrae el precio por kilo, convirtiéndolo en formato numérico. Con las fechas y precios ya preparados, se construye un dataframe con estas dos variables y se genera un gráfico de líneas que muestra cómo ha variado el precio de los plátanos por kilo a lo largo del tiempo. Esto permite detectar tendencias y cambios en los precios de ese producto.
+
 ```{r}
 #Ya tenemos un df con las fechas, ahora creamos otro con todos los tickets que tienen plátanos.
 platanos <- df_lineas %>% filter(str_detect(tolower(texto), "platano"))
@@ -522,7 +526,13 @@ ggplot(df_platanos_precio, aes(x = fecha, y = precio_kg)) +
   theme_minimal()
 ```
 
+Como podemos ver en el gráfico, el precio por kilo va aumentando y disminuyendo a largo del año 2024, pero a inicios del año 2025 ha aumentado a gran escala.
+
 9.  ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
+
+Esta pregunta busca identificar los productos menos vendidos entre los tickets disponibles. Para ello, se filtran las líneas que representan productos (aquellas que empiezan por un número, indicando la cantidad comprada). Luego, se extraen la cantidad y el nombre del producto mediante expresiones regulares.
+
+Después, se agrupan los datos por producto y se suma la cantidad total vendida de cada uno. Finalmente, se ordenan de menor a mayor según las unidades vendidas y se seleccionan los productos con menor frecuencia de compra. Así se obtiene un listado de los productos menos comprados en el conjunto de tickets analizados.
 
 ```{r}
 # Filtrar líneas que comienzan con un número (cantidad)
@@ -548,6 +558,8 @@ arrange(unidades_vendidas) %>% slice_head(n = 1000)
 # Mostrar el resultado
 productos_menos_vendidos
 ```
+
+Como podemos observar en la tabla, de entre los productos menos vendidos se encuentra el agua mineral y las albondigas de bacala con tan solo 2 unidades, empatados con muchos otros productos.
 
 10. En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)
 
