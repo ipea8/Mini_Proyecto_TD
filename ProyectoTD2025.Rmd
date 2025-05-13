@@ -1163,8 +1163,3 @@ Este trabajo no solo demuestra el valor del análisis de datos aplicado a la vid
 
 En resumen, este proyecto muestra cómo la tecnología y el análisis de datos pueden ayudar a entender mejor los hábitos de consumo, ofrecer información útil para la toma de decisiones y fomentar una gestión más inteligente del gasto doméstico.
 
-#Referencias
-
-##Referncias a tablas:
-
--   
