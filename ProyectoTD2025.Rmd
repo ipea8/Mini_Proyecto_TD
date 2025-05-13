@@ -341,7 +341,7 @@ Luego, se obtiene el precio por kilo. Para ello, se asume que el precio aparece 
 
 Finalmente, se normaliza el nombre del producto para identificar si se trata de BANANA o PLÁTANO, y se genera un gráfico de líneas que representa cómo ha variado el precio por kilo de cada fruta a lo largo del tiempo.
 
-```{r figura-bananas_platanos}
+```{r figura-bananas_platanos, fig.cap="Evolución del precio por kg del platano y la banana"}
 
 #Filtrar las lineas que contengan platano y banana
 frutas <- df_lineas %>% filter(str_detect(tolower(texto), "platano|banana"))
@@ -440,7 +440,7 @@ Finalmente, se construye un gráfico de barras que muestra claramente cuántos t
 
 El día con menos tickets generados sería, en principio, el más adecuado para cerrar, ya que implicaría un menor impacto económico.
 
-```{r figura-semanas}
+```{r figura-semanas, fig.cap="Tickets recogidos de cada dia de la semana"}
 df_fechas <- df_lineas %>% filter(linea == "5") #filtrar fechas
 df_fechas <- df_fechas %>%  mutate(fecha = str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b")) %>% select(-texto) #Guardamos solo la fecha
 df_fechas$fecha <- as.Date(df_fechas$fecha, format = "%d/%m/%Y") #Convertir str a fecha
