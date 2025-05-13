@@ -540,16 +540,11 @@ Finalmente, en la tabla \@ref:tabla-medias podemos ver el resultado: la media de
 
 8.  ¿Cómo ha evolucionado el precio por unidad o por kilo de un producto específico a lo largo del tiempo? Hacer el gráfico de cómo varía el precio de un producto a lo largo del tiempo.
 
-Se analiza cómo ha evolucionado el precio por kilo de cada producto con unidad €/kg a lo largo del tiempo. Para ello, se extrae el precio de cada línea del ticket y se asocia al nombre del producto de la línea anterior. Luego, se limpia y agrupa esta información por producto. Finalmente, se genera un gráfico por producto mostrando su precio en función del tiempo.
+Este análisis se centra en visualizar cómo ha cambiado el precio por kilo de las manzanas en los tickets de compra. Para ello, se filtran los productos con unidad €/kg, se extrae el precio por kilo y se asocia al nombre del producto de la línea anterior. Luego se limpia y se filtra solo el producto manzana, generando un gráfico de su precio en el tiempo.
 
 ```{r figura-evolucion_precio_manzanas, fig.cap="Evolución del precio por kg de manzana"}
 
-library(dplyr)
-library(stringr)
-library(lubridate)
-library(ggplot2)
-
-# 1. Asegurar tipos y limpiar símbolos raros
+# 1. Preparamos los datos
 df_lineas <- df_lineas %>%
   mutate(
     linea = as.integer(linea),
@@ -557,7 +552,7 @@ df_lineas <- df_lineas %>%
     fecha = as.Date(str_extract(archivo, "\\d{8}"), format = "%Y%m%d")
   )
 
-# 2. Filtrar solo las líneas que contienen '€/kg' y extraer precio
+# 2. Filtrar líneas con precio €/kg y extraer precio
 df_pesados <- df_lineas %>%
   filter(str_detect(texto, "€/kg")) %>%
   mutate(
@@ -570,7 +565,7 @@ df_pesados <- df_lineas %>%
   ) %>%
   select(archivo, fecha, linea, texto, precio_kg)
 
-# 3. Añadir columna 'producto' desde línea anterior y normalizar
+# 3. Obtener el nombre del producto desde la línea anterior
 df_pesados <- df_pesados %>%
   mutate(linea_anterior = linea - 1) %>%
   left_join(
@@ -586,40 +581,18 @@ df_pesados <- df_pesados %>%
       str_squish() %>%
       str_to_upper()
   ) %>%
-  select(archivo, fecha, linea, texto, precio_kg, producto)
+  filter(str_detect(producto, "MANZANA")) # Nos quedamos solo con manzanas
 
-# 4. Obtener productos únicos
-productos_unicos <- df_pesados %>%
-  filter(!is.na(producto), producto != "") %>%
-  distinct(producto) %>%
-  pull(producto)
-
-# 5. Crear lista de data.frames por producto
-df_por_producto <- lapply(productos_unicos, function(nombre) {
-  df_pesados %>%
-    filter(producto == nombre) %>%
-    arrange(fecha)
-})
-names(df_por_producto) <- productos_unicos
-
-# 6. Mostrar todos los gráficos en pantalla, evitando warnings si hay solo una observación
-for (nombre in productos_unicos) {
-  df_producto <- df_por_producto[[nombre]]
-  
-  p <- ggplot(df_producto, aes(x = fecha, y = precio_kg)) +
-    {
-      if (nrow(df_producto) > 1) geom_line(color = "steelblue", linewidth = 1) else NULL
-    } +
-    geom_point(color = "darkred", size = 2) +
-    labs(
-      title = paste("Evolución del precio por kilo:", nombre),
-      x = "Fecha",
-      y = "€/kg"
-    ) +
-    theme_minimal()
-  
-  print(p)
-}
+# 4. Graficar evolución del precio por kilo de las manzanas
+ggplot(df_pesados, aes(x = fecha, y = precio_kg)) +
+  geom_line(color = "steelblue", linewidth = 1) +
+  geom_point(color = "darkred", size = 2) +
+  labs(
+    title = "Evolución del precio por kilo: MANZANA",
+    x = "Fecha",
+    y = "€/kg"
+  ) +
+  theme_minimal()
 
 # Explicamos todas las expresiones regulares:
 # *:cero o más veces
