@@ -611,7 +611,7 @@ Como podemos ver en el gráfico, el precio por kilo tiene picos de subida en la 
 
 \newpage
 
-9.  ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
+9.  ¿Cuáles son los productos menos adquiridos en el conjunto de tickets disponibles?
 
 Se analizan los tickets para identificar los productos no vendidos al peso, filtrando aquellos que no contienen "€/kg" y comienzan por una cantidad. Luego, se limpian y estandarizan los nombres de los productos para evitar duplicados. A continuación, se cuentan las apariciones de cada producto. Finalmente, se muestran los 10 más vendidos y los 10 menos vendidos.
 
@@ -677,7 +677,7 @@ head(productos_no_peso_mas_vendidos, 10)
 # [^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\\s]: busca todo lo que NO sea una letra del alfabeto inglés o español (tanto mayúscula como minúscula), ni un espacio en blanco
 ```
 
-Los productos más vendidos son queso lonchas cabra y brotes tiernos maxi y los menos vendidos son aceite de girasol y aliñada picadedos.
+Los productos más adquiridos son queso lonchas cabra y brotes tiernos maxi y los menos adquiridos son aceite de girasol y aliñada picadedos.
 
 \newpage
 
@@ -1162,4 +1162,3 @@ Gracias al uso de librerías como pdftools, dplyr y stringr, ha sido posible ext
 Este trabajo no solo demuestra el valor del análisis de datos aplicado a la vida cotidiana, sino que también sienta las bases para posibles desarrollos futuros. Por ejemplo, se podrían integrar tickets de otros supermercados, analizar tendencias de precios a lo largo del tiempo o incluso construir recomendaciones personalizadas para consumidores.
 
 En resumen, este proyecto muestra cómo la tecnología y el análisis de datos pueden ayudar a entender mejor los hábitos de consumo, ofrecer información útil para la toma de decisiones y fomentar una gestión más inteligente del gasto doméstico.
-
