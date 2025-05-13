@@ -887,11 +887,54 @@ ggplot(df_productos, aes(x = num_productos)) +
   theme_minimal()
 ```
 
-\newpage
-
 14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
+```{r}
+# Paso 1:Calcular el importe medio por ticket y representar
+resumen_tickets <- df_lineas %>%
+  #Agrupamos todas las líneas que pertenecen al mismo ticket.
+  group_by(archivo) %>%  
+  #Determinamos el tipo de pago
+  summarise(Metodo_Pago = case_when(
+    
+#Buscamos en todas las líneas de texto del ticket si alguna contiene Tarjeta Bancaria o Efectivo (da igual que este en mayúsculas o minúsculas) y lo asignamos a       Efectivo o a Tarjeta.
+  any(str_detect(texto, regex("TARJETA BANCARIA | TARJ. BANCARIA | TARJ BANCARIA", ignore_case = TRUE))) ~ "Tarjeta",
+  any(str_detect(texto, regex("EFECTIVO|PAGO.?EFECTIVO|PAGADO EN EFECTIVO", ignore_case = TRUE))) ~ "Efectivo",
+  
+  #Si no se cumple ninguna condición anterior se asigna "Desconocido" como método de pago.
+  TRUE ~ "Desconocido"
+),
+    # Extraemos el importe total del ticket
+    Importe_Total = {
+      #Busca la linea de texto que contiene la frase "TOTAL (€)"
+      total_linea <- texto[str_detect(texto, "TOTAL \\(€\\)")] 
+      #Extrae de esa línea un patrón que representa un número con una coma como separador decimal
+      importe <- str_extract(total_linea, "\\d+,\\d{2}")         
+      #Si se encuentra un importe, reemplaza la coma por un punto para convertirlo a formato numérico. Si no se encuentra la línea del total o el patrón del importe, asigna       un valor NA.
+      if (!is.na(importe)) {
+        as.numeric(str_replace(importe, ",", "."))} 
+      else {
+        #Si no se encuentra, dejamos un valor NA
+        NA_real_}}
+  ) %>%
+  #Eliminamos aquellos tickets donde no se detectó importe total
+  filter(!is.na(Importe_Total))
+importe_medio_por_ticket <- mean(resumen_tickets$Importe_Total, na.rm = TRUE)
+ggplot(resumen_tickets, aes(x = Importe_Total)) +
+  geom_histogram(binwidth = 5, color = "black") +  # Puedes ajustar el binwidth para cambiar la granularidad
+  labs(title = "Histograma del Importe por Ticket",
+       x = "Importe Total del Ticket (€)",
+       y = "Frecuencia") +
+  theme_minimal()
+importe_medio_por_ticket
 
-\newpage
+# Paso 2: Encontrar el ticket más caro
+ticket_mas_caro <- resumen_tickets %>% slice_max(Importe_Total, n = 1)
+ticket_mas_caro
+
+# Paso 3: Encontrar el ticket más barato
+ticket_mas_barato <- resumen_tickets %>% slice_min(Importe_Total, n = 1)
+ticket_mas_barato
+```
 
 15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
 
