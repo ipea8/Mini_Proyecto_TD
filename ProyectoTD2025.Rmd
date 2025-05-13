@@ -477,7 +477,7 @@ Finalmente, en la tabla \@ref:tabla-medias podemos ver el resultado: la media de
 Se analiza cómo ha evolucionado el precio por kilo de cada producto con unidad €/kg a lo largo del tiempo. Para ello, se extrae el precio de cada línea del ticket y se asocia al nombre del producto de la línea anterior. Luego, se limpia y agrupa esta información por producto. Finalmente, se genera un gráfico por producto mostrando su precio en función del tiempo.
 
 ```{r figura-evolucion_precio_manzanas, fig.cap="Evolución del precio por kg de manzana"}
-{r}
+
 library(dplyr)
 library(stringr)
 library(lubridate)
@@ -741,6 +741,40 @@ Como se puede comprobar en la gráfica \@ref:figura-platanos se compran más pla
 
 13. ¿Cuántos productos se compran por ticket, en promedio?
 
+```{r}
+# Paso 1: Contar los productos por ticket
+df_productos <- df_lineas %>%
+  group_by(archivo) %>%
+  mutate(
+    # Detectar la primera línea con "TOTAL" o "PARKING"
+    linea_fin = min(
+      c(
+        linea[str_detect(texto, regex("TOTAL", ignore_case = TRUE))],
+        linea[str_detect(texto, regex("PARKING", ignore_case = TRUE))]
+      ),
+      na.rm = TRUE
+    ),
+    linea_fin = ifelse(is.infinite(linea_fin), max(linea), linea_fin),
+    
+    # Marcar si es línea de producto real
+    es_producto = linea >= 12 & linea < linea_fin & str_detect(str_trim(texto), "^\\d+\\s")
+  ) %>%
+  summarise(num_productos = sum(es_producto), .groups = "drop")
+
+# Paso 2: Calcular el promedio de productos por ticket
+promedio_productos_por_ticket <- mean(df_productos$num_productos)
+
+# Mostrar el resultado
+promedio_productos_por_ticket
+
+# Crear el gráfico de barras para el número de productos por ticket
+ggplot(df_productos, aes(x = num_productos)) +
+  geom_bar(fill = "black") +
+  labs(title = "Distribución de productos por ticket", 
+       x = "Número de productos por ticket", 
+       y = "Frecuencia") +
+  theme_minimal()
+```
 14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
 
 15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
