@@ -98,10 +98,10 @@ df_lineas <- do.call(rbind, lapply(archivos_pdf, function(archivo) {
 
 kable(head(df_lineas,52),caption= "Tabla de tickets de mercadona") #Se muestra el df de los tickets del mercadona
 ```
-
+\newpage
 ## Preguntas planteadas por el profesor
 
-1.  ¿Cuáles son los 5 productos, de los vendidos por unidades, con más ventas? ¿Cuántas unidades de cada uno se han vendido?
+**1.  ¿Cuáles son los 5 productos, de los vendidos por unidades, con más ventas? ¿Cuántas unidades de cada uno se han vendido?**
 
 Queremos identificar los cinco productos más vendidos en términos de unidades. Para ello, debemos analizar aquellas líneas de los tickets que corresponden a productos vendidos por cantidad (unidades) y no por peso o medida. Este tipo de productos suele aparecer en las líneas que comienzan por un número, indicando la cantidad vendida.
 
@@ -142,8 +142,8 @@ print(top_5_productos)
 ```
 
 Como podemos observar, los cinco productos más vendidos por unidades son: leche desnatada con calcio (22 unidades), barra campesina (12 unidades), chapata cristal (12 unidades), garbanzo m.cocido (12 unidades) y leche desnatada sin lactosa (12 unidades).
-
-2.  Si consideramos la categoría de FRUTAS Y VERDURAS. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
+\newpage
+**2.  Si consideramos la categoría de FRUTAS Y VERDURAS. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?**
 
 En este análisis queremos centrarnos exclusivamente en los productos pertenecientes a la categoría de frutas y verduras. Para ello, se parte de una lista de palabras clave que identifican nombres comunes de estos productos. El objetivo es identificar las líneas de los tickets que mencionan alguno de estos productos y extraer la cantidad vendida en kilos.
 
@@ -219,8 +219,8 @@ head(top_5_frutas_verduras, 5)
 ```
 
 Como podemos observar, los cinco productos más vendidos dentro de la categoría de frutas y verduras son: naranja	con 82.062Kg, patata con	74.800Kg, mandarina	con 31.186Kg, cebolla con	22.000Kg y pepino	con 19.624Kg.
-
-3.  Si consideramos la categoría de PESCADO. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?
+\newpage
+**3.  Si consideramos la categoría de PESCADO. Cuáles son los 5 productos más vendidos? ¿Cuántos kilos se han vendido de cada uno de estos productos?**
 
 En este caso nos centramos exclusivamente en los productos pertenecientes a la categoría de pescado y marisco. Para identificar estos productos, definimos una lista de palabras clave. Estas palabras nos permiten buscar en el dataframe df_lineas aquellas líneas de texto que contienen referencias a este tipo de productos.
 
@@ -295,8 +295,8 @@ head(top_5_pescado, 5)
 ```
 
 Como podemos observar, los cinco productos de la categoría pescado más vendidos por kilos son:bacaladilla con 7,4Kg, rodaballo con	3.672Kg, sepia lonja con 3.584Kg, dorada con	2.934Kg y sepia fresca con	2.642Kg.
-
-4.  Muestra mediante un gráco de líneas como ha variado el precio por kilo de las bananas y los plátanos en los tickets disponibles, a lo largo del tiempo.
+\newpage
+**4.  Muestra mediante un gráco de líneas como ha variado el precio por kilo de las bananas y los plátanos en los tickets disponibles, a lo largo del tiempo.**
 
 Para analizar la evolución temporal del precio por kilo de plátanos y bananas, se realiza un filtrado de todas las líneas del dataframe df_lineas que contengan alguna de esas dos frutas. Una vez identificadas estas líneas, se extrae el nombre del archivo (ticket) correspondiente para localizar la fecha de cada transacción.
 
@@ -306,7 +306,7 @@ Luego, se obtiene el precio por kilo. Para ello, se asume que el precio aparece 
 
 Finalmente, se normaliza el nombre del producto para identificar si se trata de BANANA o PLÁTANO, y se genera un gráfico de líneas que representa cómo ha variado el precio por kilo de cada fruta a lo largo del tiempo.
 
-```{r figura-bananas_platanos,  fig.cap="Evolución de precio por kilo de las bananas y los plátanos"}
+```{r figura-bananas_platanos}
 
 #Filtrar las lineas que contengan platano y banana
 frutas <- df_lineas %>% filter(str_detect(tolower(texto), "platano|banana"))
@@ -342,12 +342,12 @@ ggplot(frutas, aes(x = fecha, y = precio_kg, color = tipo)) +
   labs(title = "Evolución de Precios por Kg",
        x = "Fecha",
        y = "Precio por Kg",
-       color = "Tipo de Fruta")
+       color = "Tipo de Fruta") + theme_minimal()
 ```
 
 Este gráfico permite visualizar de manera clara cómo ha cambiado el precio por kilo de plátanos y bananas en las distintas fechas en las que fueron comprados. Se observan posibles fluctuaciones de precio a lo largo del tiempo, lo que puede ser útil para analizar tendencias de mercado o patrones de compra.
-
-5.  ¿Cuál es la procedencia de los tickets? ¿Qué ciudad/ pueblo tiene un mayor número de tickets?
+\newpage
+**5.  ¿Cuál es la procedencia de los tickets? ¿Qué ciudad/ pueblo tiene un mayor número de tickets?**
 
 Para responder a esta pregunta, se analiza la línea número 3 de cada ticket, ya que en ese campo se encuentra la información de la procedencia, es decir, la ciudad o pueblo en el que se emitió el ticket.
 
@@ -372,8 +372,8 @@ knitr::kable(procedencia,
 ```
 
 En la tabla podemos ver el resultado de la procedencia de los tickets, siendo valencia la ciudad más frecuente con 130 tickets, seguido de alboraia con 50 tickets y después burjassot con 26 tickets.
-
-6.  Muestra mediante un diagrama el número de tickets recogidos cada día de las semana. ¿Si tuvieses que cerrar un día entre semana qué día lo harías?
+\newpage
+**6.  Muestra mediante un diagrama el número de tickets recogidos cada día de las semana. ¿Si tuvieses que cerrar un día entre semana qué día lo harías?**
 
 Para responder a esta pregunta, se analizan las fechas de los tickets con el objetivo de identificar en qué día de la semana se ha generado cada uno, y así contar cuántos tickets corresponden a cada día.
 
@@ -386,7 +386,7 @@ Finalmente, se construye un gráfico de barras que muestra claramente cuántos t
 
 El día con menos tickets generados sería, en principio, el más adecuado para cerrar, ya que implicaría un menor impacto económico.
 
-```{r figura-semanas, fig.cap="Tickets recogidos cada día de las semana"}
+```{r figura-semanas}
 df_fechas <- df_lineas %>% filter(linea == "5") #filtrar fechas
 df_fechas <- df_fechas %>%  mutate(fecha = str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b")) %>% select(-texto) #Guardamos solo la fecha
 df_fechas$fecha <- as.Date(df_fechas$fecha, format = "%d/%m/%Y") #Convertir str a fecha
@@ -405,14 +405,14 @@ ggplot(dia_semana, aes(x = semana, y = Freq, fill = semana)) +
   geom_bar(stat = "identity") +  # "identity" usa los valores de 'Freq'
   labs(title = "Tickets recogidos cada día de las semana",
     x = "Día de la semana",
-    y = "Número de tickets")
+    y = "Número de tickets") + theme_minimal()
 ```
 
 Como se observa en la Tabla, si se tuviese que cerrar un día entre semana seria el jueves.
-
+\newpage
 ## Preguntas planteadas por nosotros
 
-7.  ¿Cuál es la media de ventas para cada día de la semana?
+**7.  ¿Cuál es la media de ventas para cada día de la semana?**
 
 Este código tiene como objetivo procesar y analizar tickets de compra en formato PDF. Primero, extrae la fecha de cada ticket y la convierte en un formato de fecha legible por R. Luego, identifica dónde comienzan los productos dentro del ticket para separar esa sección del resto del contenido. A partir de ahí, filtra solo las líneas que corresponden a productos realmente comprados.
 
@@ -467,8 +467,8 @@ Después, cuenta cuántos productos hay por ticket y asocia esta cantidad con su
 ```
 
 Finalmente, en esta tabla podemos ver el resultado: la media de productos los lunes es de 34, la de los martes es de 30, la de los miércoles es de 32, la de los jueves es de 27, la de los viernes es de 32, la de los sábados es de 36 y la de los domingos es de 30. Podemos observar que, de normal, el dia que menos productos se venden es el jueves.
-
-8.  ¿Cómo ha evolucionado el precio por unidad o por kilo de un producto específico a lo largo del tiempo? Hacer el gráfico de cómo varía el precio de un producto a lo largo del tiempo.
+\newpage
+**8.  ¿Cómo ha evolucionado el precio por unidad o por kilo de un producto específico a lo largo del tiempo? Hacer el gráfico de cómo varía el precio de un producto a lo largo del tiempo.**
 
 Esta pregunta analiza cómo ha cambiado el precio por kilo de los plátanos a lo largo del tiempo usando los tickets de Mercadona en PDF. Primero, se filtran las líneas de los tickets que contienen la palabra "plátano" y se extraen los nombres de los archivos donde aparecen. Luego, se obtienen las fechas asociadas a esos tickets (suponiendo que la fecha está en la línea 5) y se añaden al dataframe.
 
@@ -527,8 +527,8 @@ ggplot(df_platanos_precio, aes(x = fecha, y = precio_kg)) +
 ```
 
 Como podemos ver en el gráfico, el precio por kilo va aumentando y disminuyendo a largo del año 2024, pero a inicios del año 2025 ha aumentado a gran escala.
-
-9.  ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
+\newpage
+**9.  ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?**
 
 Esta pregunta busca identificar los productos menos vendidos entre los tickets disponibles. Para ello, se filtran las líneas que representan productos (aquellas que empiezan por un número, indicando la cantidad comprada). Luego, se extraen la cantidad y el nombre del producto mediante expresiones regulares.
 
@@ -560,8 +560,8 @@ productos_menos_vendidos
 ```
 
 Como podemos observar en la tabla, de entre los productos menos vendidos se encuentra el agua mineral y las albondigas de bacala con tan solo 2 unidades, empatados con muchos otros productos.
-
-10. En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)
+\newpage
+**10. En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)**
 
 Buscamos identificar cuál es el producto que más se compra por unidades en los tickets disponibles. Para ello, primero se filtran aquellas líneas del conjunto de datos (df_lineas) que comienzan con un número seguido de un espacio.
 
@@ -584,8 +584,8 @@ head(df_unidades, 1)
 ```
 
 Como podemos observar, el producto más comprado por unidades en una sola transacción es la cola sin cafeina (8 unidades).
-
-11. ¿Cuáles son las combinaciones de productos más frecuentes (dos productos que se compren juntos)?
+\newpage
+**11. ¿Cuáles son las combinaciones de productos más frecuentes (dos productos que se compren juntos)?**
 
 El objetivo de esta pregunta es identificar qué pares de productos suelen comprarse juntos en un mismo ticket. Para comenzar, se filtran las líneas del dataset que contienen información sobre productos vendidos por unidad. Estas líneas se dividen en varias columnas como unidades, descripción del producto, precio por unidad e importe total. Se excluyen las líneas que hacen referencia a "DONACIÓN" para evitar sesgos en los datos. Luego, se seleccionan solo las columnas relevantes, en este caso el archivo (que identifica el ticket) y la descripción del producto. Posteriormente, se agrupan los datos por ticket y se eliminan aquellos que solo contienen un producto, ya que no pueden formar combinaciones.
 
@@ -616,8 +616,8 @@ pares_frecuentes
 ```
 
 Como podemos observar, las combinaciones más comunes son brotes tiernos maxi y queso lonchas cabra (comprados 16 veces).
-
-12. ¿Hay estacionalidad en plátanos? (se compran más en cierta fecha del año)
+\newpage
+**12. ¿Hay estacionalidad en plátanos? (se compran más en cierta fecha del año)**
 
 Esta pregunta busca detectar si existe una estacionalidad en la compra de plátanos, es decir, si hay meses específicos en los que se compran más plátanos que en otros. Para analizar esto, primero se filtran las líneas que contienen la palabra "plátano" (ignorando mayúsculas y minúsculas). Luego, se identifican los tickets (archivos) que contienen estos productos. A partir de esos tickets, se recuperan las fechas asociadas a cada compra de plátanos, que normalmente se encuentran en la línea 5 de cada ticket, y se extrae la fecha en formato texto para convertirla en un formato de fecha válido en R.
 
@@ -676,12 +676,14 @@ grafico_platanos
 
 Como se puede comprobar en la gráfica se compran más platanos en los meses de enero, 
 febrero y marzo (es decir, en invierno), por tanto, los plátanos tienen estacionalidad.
+\newpage
+**13. ¿Cuántos productos se compran por ticket, en promedio?**
 
-13. ¿Cuántos productos se compran por ticket, en promedio?
+\newpage
+**14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?**
 
-14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
-
-15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?
+\newpage
+**15. ¿Cuál es la cantidad total de dinero que se obtiene en impuestos cuando se venden alimentos con un 10% de IVA? ¿Y con un 21% y un 5%?**
 
 Queremos calcular la cantidad total de dinero recaudado en concepto de impuestos (IVA) a partir de los tickets de compra proporcionados. En este caso, nos piden centrarnos solo en 3 tipos de IVA (21%, 10% y 5%).
 
@@ -763,8 +765,8 @@ cat("Tickets con IVA:", tickets_con_IVA, "\n")
 ```
 Como podemos ver, ambos números son iguales (total de tickets únicos y tickets con el IVA extraido), entonces no hay ningún dato perdido.
 
-
-16. ¿A qué horas se suele ir más a comprar en los supermercados? ¿Cuáles son las que menos?
+\newpage
+**16. ¿A qué horas se suele ir más a comprar en los supermercados? ¿Cuáles son las que menos?**
 
 Queremos saber qué horas del día tienen mayor y menor afluencia en supermercados. Para ello, necesitamos extraer la hora de compra registrada en cada ticket.
 
@@ -838,8 +840,8 @@ nrow(df_horas)
 ```
 Como podemos ver, ambos números son iguales (total de tickets únicos y tickets con hora extraída), entonces no hay ningún dato perdido.
 
-
-17. ¿Qué método de pago es más frecuente en los tickets: tarjeta o efectivo? Muéstralo mediante un box plot ¿Cuánto se ha gastado en total con cada método de pago?
+\newpage
+**17. ¿Qué método de pago es más frecuente en los tickets: tarjeta o efectivo? Muéstralo mediante un box plot ¿Cuánto se ha gastado en total con cada método de pago?**
 
 Nos piden averiguar cual es el método de pago que más se repite: efectivo o tajeta.
 
@@ -891,7 +893,7 @@ totales_por_metodo <- resumen_tickets %>%
 kable(totales_por_metodo, caption = "Importe total de cada método de pago")
 ```
 Como se puede observar cada ticket ha coincidido en el método de pago, todos han sido pagados con tarjeta. También vemos que el importe total de todos los tickets es 13.649,8€. 
-
+\newpage
 # Conclusión
 
 A lo largo de este proyecto, se ha desarrollado una herramienta funcional y automatizada en R para la lectura, limpieza, estructuración y análisis de tickets de compra en formato PDF, concretamente de supermercados Mercadona. Este sistema permite transformar documentos no estructurados en un conjunto de datos ordenado y analizable, lo que constituye un paso esencial en el procesamiento de información real proveniente del ámbito del consumo diario.
