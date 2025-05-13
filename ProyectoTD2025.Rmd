@@ -852,6 +852,12 @@ Como se puede comprobar en la gráfica \@ref:figura-platanos se compran más pla
 
 13. ¿Cuántos productos se compran por ticket, en promedio?
 
+Esta pregunta calcula cuántos productos se compran, en promedio, por ticket. Para ello, se agrupan las líneas por ticket y se identifica hasta qué punto del texto aparecen los productos, usando como referencia las palabras "TOTAL" o "PARKING".
+
+Luego, se cuentan las líneas que representan productos, detectando aquellas que empiezan con un número seguido de un espacio (por ejemplo: “1 LIMPIADOR 1,50”), que es el formato típico en los tickets de Mercadona.
+
+Una vez contado el número de productos en cada ticket, se calcula el promedio total usando la función mean(). Además, se crea un gráfico de barras que muestra la frecuencia de tickets según la cantidad de productos que contienen.
+
 ```{r}
 # Paso 1: Contar los productos por ticket
 df_productos <- df_lineas %>%
@@ -887,9 +893,18 @@ ggplot(df_productos, aes(x = num_productos)) +
   theme_minimal()
 ```
 
+Como vemos en el resultado, en promedio se compran 16 productos por ticket.
+
 \newpage
 
 14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
+
+Esta pregunta analiza los importes de los tickets para saber cuánto se gasta en promedio y detectar el ticket más caro y el más barato.
+
+Primero se agrupan los datos por ticket y se identifica el método de pago (tarjeta, efectivo o desconocido). Luego se localiza la línea que contiene “TOTAL (€)” y se extrae el importe total del ticket.
+
+Con esos datos, se calcula el importe medio por ticket y se muestra un histograma para ver la distribución de importes. Finalmente, se busca qué ticket tiene el importe más alto y cuál tiene el más bajo.
+
 ```{r}
 # Paso 1:Calcular el importe medio por ticket y representar
 resumen_tickets <- df_lineas %>%
@@ -937,6 +952,8 @@ ticket_mas_caro
 ticket_mas_barato <- resumen_tickets %>% slice_min(Importe_Total, n = 1)
 ticket_mas_barato
 ```
+
+Como vemos en el resultado, el importe medio por ticket es de 46€. El ticket más caro registrado es: 20240323 Mercadona 234,20.pdf y el más barato es: 20241227 Mercadona 0,43 €.pdf.
 
 \newpage
 
