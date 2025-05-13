@@ -110,35 +110,42 @@ Comenzamos filtrando del dataframe original (df_lineas) únicamente las líneas 
 Una vez extraídos los datos, creamos un nuevo dataframe con dos columnas: nombre del producto y cantidad vendida. A continuación, agrupamos los productos, sumamos las cantidades y seleccionamos los cinco con mayor número de unidades vendidas. Por último, mostramos los resultados.
 
 ```{r tabla-productosvendidos}
+# Añadimos la línea siguiente a cada línea para poder detectar si un producto está seguido por "kg"
+df_lineas <- df_lineas %>%
+  arrange(archivo, linea) %>%
+  group_by(archivo) %>%
+  mutate(texto_siguiente = lead(texto)) %>%
+  ungroup()
 
-# Filtrar líneas que comienzan con un número (cantidad)
-df_productos <- df_lineas %>% filter(str_detect(texto, "^\\d+\\s" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (^: inicio de linea, \\d+: \\d(me coge los digitos) y + (me coge uno o mas digitos, depende de cuantos haya) y \\s: al final tenga espacios en blanco (+: uno o varios)
-                    )) %>%
-  
-# Extraer partes específicas de cada línea (con str_match): cantidad, nombre del producto, y precio
+# Detectar productos por unidad
+productos_unidades <- df_lineas %>%
+  # Comienzan con un número, no contienen "kg" ni "€/kg" y no están seguidos por peso
+  filter(str_detect(texto, "^\\d+\\s") & 
+           !str_detect(texto, "kg|€/kg") &
+           !str_detect(texto_siguiente, "kg|€/kg")) %>%
   mutate(
-    matches = str_match(texto, "^(\\d+)\\s+(.*?)\\s+(\\d+,\\d{2})\\s+(\\d+,\\d{2})?$" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (^: comienzo de linea, (\\d+): una o mas cifras(cantidad),  \\s+: uno o mas espacios en blanco, (.*?): me dice el nombre del producto, \\s+: uno o mas espacios en blanco, (\\d+,\\d{2}): me coje el precio por unidades, \\s+: uno o mas espacios, (\\d+,\\d{2})?: me coje el importe total y, por ultimo $:final de linea)
-                        ),
-# Crear columnas a partir de los grupos extraídos
-    cantidad = as.numeric(matches[, 2]),
-    producto = str_trim(matches[, 3])
+    cantidad = as.numeric(str_extract(texto, "^\\d+")),
+    producto = str_trim(str_remove(
+      str_extract(texto, "^\\d+\\s+.+?\\s+\\d+[,.]\\d{2}"), "^\\d+\\s+")),
+    producto = str_remove(producto, "\\s+\\d+[,.]\\d{2}$")
   ) %>%
-  filter(!is.na(cantidad), !is.na(producto))
-
-# Agrupar y sumar las cantidades por producto (unidades vendidas por producto)
-top_5_productos <- df_productos %>%
+  filter(!is.na(cantidad), !is.na(producto)) %>%
   group_by(producto) %>%
   summarise(unidades_vendidas = sum(cantidad), .groups = "drop") %>%
-
-# Ordenar y obtener el top 5 de productos mas vendidos  
   arrange(desc(unidades_vendidas)) %>%
   slice_head(n = 5)
 
-#Mostrar el resultado creando la referencia con knitr
-knitr::kable(head(top_5_productos),
-             caption = "5 productos más vendidos por unidades",
-             booktabs = TRUE)
+kable(productos_unidades, caption = "Top 5 productos vendidos por unidades")
 
+# Explicamos todas las expresiones regulares:
+# ^: inicio de linea
+# \\d: aparece un dígito
+# \\s: aparece un espacio en blanco
+# +: una o más veces
+# .+?: cualquier carácter (.) uno o más (+), pero lo menos posible (?) (me dice el nombre del producto)
+# [,.]: puede ser coma (,) o punto (.) como separador decimal
+# \\d{2}: exactamente dos dígitos (los decimales, como "00")
+# $: fin de linea
 ```
 
 Como podemos observar en la tabla \@ref:tabla-productosvendidos, los cinco productos más vendidos por unidades son: leche desnatada con calcio (22 unidades), barra campesina(12 unidades), chapata cristal(12 unidades), garbanzo m.cocido (12 unidades) y leche desnatada sin lactosa (12 unidades).
@@ -166,11 +173,10 @@ resultados <- data.frame(producto = character(), cantidad_kg = numeric(), string
 for (i in frutas_verduras) {
   linea_producto <- df_lineas$texto[i]
  #Extraer nombre del producto
-  producto <- gsub("\\s*\\d+\\s*(kg|KG).*" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (\\s*: puede ser que tenga o no espacios en blanco, \\d+: uno o mas digitos, \\s*: espacios opcionales entre el numero y el kilo, kg: que sean kilos y .*:quiere decir que puede ser que detras tenga otra cosa)
-                   , "", linea_producto)  # Limpia el nombre del producto
+  producto <- gsub("\\s*\\d+\\s*(kg|KG).*", "", linea_producto)  # Limpia el nombre del producto
 
   # Extraer la cantidad de la misma línea
-  match_misma_linea <- regmatches(linea_producto, regexpr("\\d+[.,]?\\d*\\s*(kg|KG)" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (\\d+:uno o mas digitos, [.,]?: despues hay una coma o punto y coma, \\d*: seguido de cero o algunos digitos, \\s*: despues cero o algun espacio y kg: acabado en kg)
+  match_misma_linea <- regmatches(linea_producto, regexpr("\\d+[.,]?\\d*\\s*(kg|KG)"
                                                           , linea_producto, ignore.case = TRUE))
   
   if (length(match_misma_linea) > 0) {
@@ -180,7 +186,7 @@ for (i in frutas_verduras) {
   else if (i + 1 <= nrow(df_lineas)) {
     # Revisar la línea siguiente
     linea_siguiente <- df_lineas$texto[i + 1]
-    match_siguiente_linea <- regmatches(linea_siguiente, regexpr("\\d+[.,]?\\d*\\s*(kg|KG)" # Es exactamente lo mismo de antes 
+    match_siguiente_linea <- regmatches(linea_siguiente, regexpr("\\d+[.,]?\\d*\\s*(kg|KG)" 
                                                                  , linea_siguiente, ignore.case = TRUE))
     
     if (length(match_siguiente_linea) > 0) {
@@ -198,10 +204,8 @@ for (i in frutas_verduras) {
 
 # Limpieza robusta del nombre del producto
 resultados$producto <- toupper(resultados$producto)                     # Todo a mayúsculas
-resultados$producto <- gsub("^[^A-Z]*" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (^: inicio de linea, [^A-Z]: seguido de cualquier caracter que no sea una letra mayuscula de la A a la Z, *: puede ser que haya o no alguna repeticion de este patron)
-                            , "", resultados$producto)        # Elimina cualquier cosa que no sea letra al inicio
-resultados$producto <- gsub("\\s+" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (\\s+: uno o mas espacios en blanco)
-                            , " ", resultados$producto)           # Reemplaza múltiples espacios por uno solo
+resultados$producto <- gsub("^[^A-Z]*", "", resultados$producto)        # Elimina cualquier cosa que no sea letra al inicio
+resultados$producto <- gsub("\\s+", " ", resultados$producto)           # Reemplaza múltiples espacios por uno solo
 resultados$producto <- trimws(resultados$producto)                      # Quita espacios delante y detrás
 
 
@@ -217,7 +221,18 @@ knitr::kable(head(top_5_frutas_verduras),
              caption = "5 frutas y verduras más vendidas (kg)",
              booktabs = TRUE)
 
-# Los cinco productos mas vendidos de frutas y verduras son naranja	con 82.062Kg, patata con	74.800Kg, mandarina	con 31.186Kg, cebolla con	22.000Kg y pepino	con 19.624Kg.
+# Explicamos todas las expresiones regulares:
+# *: cero o más veces
+# .*: cualquier cosa después
+# ^: inicio de linea
+# \\d: aparece un dígito
+# \\s: aparece un espacio en blanco
+# +: una o más veces
+# .+?: cualquier carácter (.) uno o más (+), pero lo menos posible (?) (me dice el nombre del producto)
+# [,.]: puede ser coma (,) o punto (.) como separador decimal
+# \\d{2}: exactamente dos dígitos (los decimales, como "00")
+# $: fin de linea
+# [^A-Z]: cualquier caracter que no sea una letra mayuscula de la A a la Z
 ```
 
 Como podemos observar en la tabla \@ref:tabla-frutasverduras, los cinco productos más vendidos dentro de la categoría de frutas y verduras son: naranja con 82.062Kg, patata con 74.800Kg, mandarina con 31.186Kg, cebolla con 22.000Kg y pepino con 19.624Kg.
@@ -245,8 +260,7 @@ resultados_pescado <- data.frame(producto = character(), cantidad_kg = numeric()
 for (i in pescado) {
   linea_producto <- df_lineas$texto[i]
   # Extraer solo el nombre del producto
-  producto <- gsub("\\s*\\d+\\s*(kg|KG).*" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (\\s*: puede ser que tenga o no espacios en blanco, \\d+: uno o mas digitos, \\s*: espacios opcionales entre el numero y el kilo, kg: que sean kilos y .*:quiere decir que puede ser que detras tenga otra cosa)
-                   , "", linea_producto)
+  producto <- gsub("\\s*\\d+\\s*(kg|KG).*", "", linea_producto)
   
   # Buscar la cantidad de kilos en la misma línea
   match_misma_linea <- regmatches(linea_producto, regexpr("\\d+[.,]?\\d*\\s*(kg|KG)", linea_producto, ignore.case = TRUE))
@@ -259,7 +273,7 @@ for (i in pescado) {
   else if (i + 1 <= nrow(df_lineas)) {
     # Revisar la línea siguiente
     linea_siguiente <- df_lineas$texto[i + 1]
-    match_siguiente_linea <- regmatches(linea_siguiente, regexpr("\\d+[.,]?\\d*\\s*(kg|KG)" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (\\d+:uno o mas digitos, [.,]?: despues hay una coma o punto y coma, \\d*: seguido de cero o algunos digitos, \\s*: despues cero o algun espacio y kg: acabado en kg)
+    match_siguiente_linea <- regmatches(linea_siguiente, regexpr("\\d+[.,]?\\d*\\s*(kg|KG)"
                                                                  , linea_siguiente, ignore.case = TRUE))
     
     if (length(match_siguiente_linea) > 0) {
@@ -277,10 +291,8 @@ for (i in pescado) {
 
 # Normalización del texto del producto
 resultados_pescado$producto <- toupper(resultados_pescado$producto)
-resultados_pescado$producto <- gsub("^[^A-Z]*" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (^: inicio de linea, [^A-Z]: seguido de cualquier caracter que no sea una letra mayuscula de la A a la Z, *: puede ser que haya o no alguna repeticion de este patron)
-                                    , "", resultados_pescado$producto)
-resultados_pescado$producto <- gsub("\\s+" # Esto quiere decir que del texto del ticket sacamos todo aquello que empiece por (\\s+: uno o mas espacios en blanco)
-                                    , " ", resultados_pescado$producto)
+resultados_pescado$producto <- gsub("^[^A-Z]*", "", resultados_pescado$producto)
+resultados_pescado$producto <- gsub("\\s+", " ", resultados_pescado$producto)
 resultados_pescado$producto <- trimws(resultados_pescado$producto)
 
 # Agrupar y sumar los kilos
@@ -295,7 +307,18 @@ knitr::kable(head(top_5_pescado),
              caption = "5 pescados más vendidos (kg)",
              booktabs = TRUE)
 
-# Los cinco productos de pescado más vendidos son bacaladilla con 7,372Kg, rodaballo con	3.672Kg, sepia lonja con 3.584Kg, dorada con	2.934Kg y sepia fresca con	2.642Kg.
+# Explicamos todas las expresiones regulares:
+# *: cero o más veces
+# .*: cualquier cosa después
+# ^: inicio de linea
+# \\d: aparece un dígito
+# \\s: aparece un espacio en blanco
+# +: una o más veces
+# .+?: cualquier carácter (.) uno o más (+), pero lo menos posible (?) (me dice el nombre del producto)
+# [,.]: puede ser coma (,) o punto (.) como separador decimal
+# \\d{2}: exactamente dos dígitos (los decimales, como "00")
+# $: fin de linea
+# [^A-Z]: cualquier caracter que no sea una letra mayuscula de la A a la Z
 ```
 
 Como podemos observar en la tabla \@ref:tabla-pescado, los cinco productos de la categoría pescado más vendidos por kilos son:bacaladilla con 7,4Kg, rodaballo con 3.672Kg, sepia lonja con 3.584Kg, dorada con 2.934Kg y sepia fresca con 2.642Kg.
@@ -347,6 +370,15 @@ ggplot(frutas, aes(x = fecha, y = precio_kg, color = tipo)) +
        x = "Fecha",
        y = "Precio por Kg",
        color = "Tipo de Fruta")
+
+# Explicamos todas las expresiones regulares:
+# \\b: marca el comienzo o el final de una palabra
+# \\d: aparece un dígito
+# \\s: aparece un espacio en blanco
+# +: una o más veces
+# \\d{2}: exactamente dos dígitos (los decimales, como "00")
+# \\d{4}: exactamente cuatro dígitos
+
 ```
 
 El gráfico \@ref:figura-bananas_platanos permite visualizar de manera clara cómo ha cambiado el precio por kilo de plátanos y bananas en las distintas fechas en las que fueron comprados. Se observan posibles fluctuaciones de precio a lo largo del tiempo, lo que puede ser útil para analizar tendencias de mercado o patrones de compra.
@@ -373,6 +405,13 @@ knitr::kable(procedencia,
              caption = "Procedencia de los tickets", 
              booktabs = TRUE)
 
+# Explicamos todas las expresiones regulares:
+# ^: inicio de linea
+# |: es el operador "o" en las expresiones regulares
+# \\s: aparece un espacio en blanco
+# +: una o más veces
+# [0-9]: cualquier dígito entre 0 y 9
+# $: fin de la linea
 ```
 
 En la tabla \@ref:tabla-procedencia podemos ver el resultado de la procedencia de los tickets, siendo valencia la ciudad más frecuente con 130 tickets, seguido de alboraia con 50 tickets y después burjassot con 26 tickets.
@@ -409,6 +448,11 @@ ggplot(dia_semana, aes(x = semana, y = Freq, fill = semana)) +
   labs(title = "Tickets recogidos cada día de las semana",
     x = "Día de la semana",
     y = "Número de tickets")
+
+# Explicamos todas las expresiones regulares:
+# \\b: marca el comienzo o el final de una palabra
+# \\d{2}: exactamente dos dígitos (los decimales, como "00")
+# \\d{4}: exactamente cuatro dígitos
 ```
 
 Como se observa en la figura \@ref:figura-semanas, si se tuviese que cerrar un día entre semana seria el jueves.
@@ -467,6 +511,12 @@ media_por_dia <- df_final %>%
 
 # 5. Mostrar resultado
 print(media_por_dia)
+
+# Explicamos todas las expresiones regulares:
+# \\d: aparece un dígito
+# \\s: aparece un espacio en blanco
+# +: una o más veces
+# \\d{8}: exactamente ocho dígitos
 
 ```
 
@@ -555,15 +605,25 @@ for (nombre in productos_unicos) {
   print(p)
 }
 
+# Explicamos todas las expresiones regulares:
+# *:cero o más veces
+# ^: inicio de linea
+# \\d: aparece un dígito
+# \\s: aparece un espacio en blanco
+# +: una o más veces
+# (?=\\s*€/kg): Asegura que lo que sigue después del número sean cero o más espacios y el texto literal "€/kg", pero no lo incluye en el resultado
+# [,.]: puede ser coma (,) o punto (.) como separador decimal
+# \\d{2}: exactamente dos dígitos (los decimales, como "00")
+# \\d{8}: exactamente ocho dígitos
+# [^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\\s]: busca todo lo que NO sea una letra del alfabeto inglés o español (tanto mayúscula como minúscula), ni un espacio en blanco
+
 ```
 
 Como podemos ver en el gráfico \@ref:figura-evolucion_precio_manzanas, el precio por kilo tiene picos de subida en la primera mitad del año 2024 y luego baja mucho y se mantiene constante.
 
 9.  ¿Cuáles son los productos menos vendidos en el conjunto de tickets disponibles?
 
-    ¿Cuáles son los productos mas vendidos en el conjunto de tickets disponibles?
-
-    Se analizan los tickets para identificar los productos no vendidos al peso, filtrando aquellos que no contienen "€/kg" y comienzan por una cantidad. Luego, se limpian y estandarizan los nombres de los productos para evitar duplicados. A continuación, se cuentan las apariciones de cada producto. Finalmente, se muestran los 10 más vendidos y los 10 menos vendidos.
+Se analizan los tickets para identificar los productos no vendidos al peso, filtrando aquellos que no contienen "€/kg" y comienzan por una cantidad. Luego, se limpian y estandarizan los nombres de los productos para evitar duplicados. A continuación, se cuentan las apariciones de cada producto. Finalmente, se muestran los 10 más vendidos y los 10 menos vendidos.
 
 ```{r tabla-menosvendidos}
 # 1. Identificar productos no pesados (sin €/kg y que comienzan por un número)
@@ -614,8 +674,17 @@ productos_no_peso_mas_vendidos <- df_no_peso %>%
 # Mostrar los 10 más vendidos
 head(productos_no_peso_mas_vendidos, 10)
 
-
-
+# Explicamos todas las expresiones regulares:
+# *:cero o más veces
+# ^: inicio de linea
+# \\d: aparece un dígito
+# \\s: aparece un espacio en blanco
+# +: una o más veces
+# (?=\\s*€/kg): Asegura que lo que sigue después del número sean cero o más espacios y el texto literal "€/kg", pero no lo incluye en el resultado
+# [,.]: puede ser coma (,) o punto (.) como separador decimal
+# \\d{2}: exactamente dos dígitos (los decimales, como "00")
+# \\d{8}: exactamente ocho dígitos
+# [^A-Za-zÁÉÍÓÚÜÑáéíóúüñ\\s]: busca todo lo que NO sea una letra del alfabeto inglés o español (tanto mayúscula como minúscula), ni un espacio en blanco
 ```
 
 10. En una compra, ¿cuál es el producto por unidad que se adquiere en mayor cantidad? (NO FRUTAS Y VERDURAS NI PESCADO)
@@ -640,6 +709,13 @@ df_unidades <- df_lineas %>% filter(str_detect(texto, "^\\d+\\s")) %>% separate(
 knitr::kable(head(df_unidades, 1),
              caption = "Producto con el mayor número de unidades en un ticket",
              booktabs = TRUE)
+
+# Explicamos todas las expresiones regulares:
+# ^: inicio de linea
+# \\d: aparece un dígito
+# \\s: aparece un espacio en blanco
+# +: una o más veces
+
 ```
 
 Como podemos observar en la tabla \@ref:tabla-masunidades, el producto más comprado por unidades en una sola transacción es la cola sin cafeina (8 unidades).
@@ -676,6 +752,12 @@ pares_frecuentes <- pares_productos %>% count(productos, sort = T)
 knitr::kable(head(pares_frecuentes),
              caption = "Pares de productos diferentes que se compran más veces juntos",
              booktabs = TRUE)
+
+# Explicamos todas las expresiones regulares:
+# ^: inicio de linea
+# \\d: aparece un dígito
+# \\s: aparece un espacio en blanco
+# +: una o más veces
 ```
 
 Como podemos observar en la tabla \@ref:tabla-combinaciones, las combinaciones más comunes son brotes tiernos maxi y queso lonchas cabra (comprados 16 veces).
@@ -698,7 +780,8 @@ archivo_platanos <- as.vector(archivo_platanos$archivo) #Convertir a vector
 df_fechas_platanos <- df_lineas %>% filter(linea == "5") %>% right_join(data.frame(archivo = archivo_platanos), by = "archivo")
 
 #Filtramos para quedarnos solo con las fechas en formato texto
-df_fechas_platanos <- df_fechas_platanos %>%  mutate(fecha = str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b")) %>% select(-texto)
+df_fechas_platanos <- df_fechas_platanos %>%  mutate(fecha = str_extract(texto, "\\b\\d{2}/\\d{2}/\\d{4}\\b" # Explicamos todas las expresiones regulares: \\b: marca el comienzo o el final de una palabra, \\d: aparece un dígito, \\s: aparece un espacio en blanco, +: una o más veces, \\d{2}: exactamente dos dígitos (los decimales, como "00"), \\d{4}: exactamente cuatro dígitos)) %>% select(-texto)
+                                                                         )) %>% select(-texto)
 
 #Guardamos la fecha en el df de platanos
 platanos$fecha <- df_fechas_platanos$fecha
@@ -735,11 +818,48 @@ platanos_limpio <- platanos_limpio %>% mutate(fecha = as.character(fecha)) %>% s
 grafico_platanos <- platanos_limpio %>% ggplot(aes(x = `anyo-mes`, y = cantidad_total)) + geom_point(aes(color = `anyo-mes`)) + labs(title = "Kg de plátanos comprados por cada mes y año")
 grafico_platanos
 
+
+
 ```
 
 Como se puede comprobar en la gráfica \@ref:figura-platanos se compran más platanos en los meses de enero, febrero y marzo (es decir, en invierno), por tanto, los plátanos tienen estacionalidad.
 
 13. ¿Cuántos productos se compran por ticket, en promedio?
+
+```{r}
+# Paso 1: Contar los productos por ticket
+df_productos <- df_lineas %>%
+  group_by(archivo) %>%
+  mutate(
+    # Detectar la primera línea con "TOTAL" o "PARKING"
+    linea_fin = min(
+      c(
+        linea[str_detect(texto, regex("TOTAL", ignore_case = TRUE))],
+        linea[str_detect(texto, regex("PARKING", ignore_case = TRUE))]
+      ),
+      na.rm = TRUE
+    ),
+    linea_fin = ifelse(is.infinite(linea_fin), max(linea), linea_fin),
+    
+    # Marcar si es línea de producto real
+    es_producto = linea >= 12 & linea < linea_fin & str_detect(str_trim(texto), "^\\d+\\s")
+  ) %>%
+  summarise(num_productos = sum(es_producto), .groups = "drop")
+
+# Paso 2: Calcular el promedio de productos por ticket
+promedio_productos_por_ticket <- mean(df_productos$num_productos)
+
+# Mostrar el resultado
+promedio_productos_por_ticket
+
+# Crear el gráfico de barras para el número de productos por ticket
+ggplot(df_productos, aes(x = num_productos)) +
+  geom_bar(fill = "black") +
+  labs(title = "Distribución de productos por ticket", 
+       x = "Número de productos por ticket", 
+       y = "Frecuencia") +
+  theme_minimal()
+```
 
 14. ¿Cuál es el importe medio por ticket? ¿Cuál es el ticket más caro registrado? ¿Y el más barato?
 
@@ -771,9 +891,12 @@ df_IVA<-df_lineas %>%
   texto=str_squish(texto),
   
   #Extraemos los componentes porcentaje, base y cuota con la expresión regular.
-  porcentaje = str_extract(texto, "^\\d{1,2}"),
-  base = str_extract(texto, "(?<=\\s)\\d+[,.]\\d{2}(?=\\s+\\d+[,.]\\d{2}$)"),
-  cuota = str_extract(texto, "\\d+[,.]\\d{2}$")
+  porcentaje = str_extract(texto, "^\\d{1,2}" # Expresiones regulares: ^:inicio de linea, \\d{1,2} : debe haber entre 1 o 2 cifras, 
+                           ),
+  base = str_extract(texto, "(?<=\\s)\\d+[,.]\\d{2}(?=\\s+\\d+[,.]\\d{2}$)" # Expresiones regulares: (?<=\\s): asegura que antes haya al menos un espacio, \\d+: uno o más dígitos, [,.]: punto o coma como separador decimal, \\d{2}: exactamente dos dígitos, $:fin de linea
+                     ),
+  cuota = str_extract(texto, "\\d+[,.]\\d{2}$" # Expresiones regulares: \\d+: uno o más dígitos, [,.]: punto o coma como separador, \\d{2}: exactamente dos dígitos, $:fin de linea
+                      )
   ) %>% 
   
   #Convertimos los strings en valores numéricos
